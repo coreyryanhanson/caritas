@@ -1,0 +1,18 @@
+{
+	"name": "caritas",
+	"version": "0.1.0",
+	"private": true,
+	"description": "Reference API guide recipes for pi-lean-host. A devDep-only source repo consumed by its own test tooling; never published to npm.",
+	"type": "module",
+	"scripts": {
+		"test": "vitest run",
+		"test:ci": "vitest run --exclude='**/endpoint-coverage.test.ts'"
+	},
+	"devDependencies": {
+		"@types/node": "^25.9.1",
+		"pi-lean-host": "file:../pi-browser/packages/pi-lean-host",
+		"tsx": "^4.19.2",
+		"typescript": "^6.0.3",
+		"vitest": "^4.1.8"
+	}
+}
