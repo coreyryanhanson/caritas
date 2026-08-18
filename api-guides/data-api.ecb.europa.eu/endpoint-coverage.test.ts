@@ -3,7 +3,7 @@
  *
  * Tests the live ECB SDMX 2.1 REST service (`https://data-api.ecb.europa.eu/service`):
  * parses the recipe and executes every defined operation against the live endpoint.
- * The `getData` SDMX-ML assertion is the design-doc A2 hard proof — a prefix-everywhere
+ * The `getData` SDMX-ML assertion is the A2 hard proof — a prefix-everywhere
  * XML response (`message:GenericData`, `generic:Series`, `generic:Obs`, `common:…`)
  * whose parsed keys must resolve prefix-free (`GenericData.DataSet.Series`) thanks to
  * the `removeNSPrefix` fix, without literal colon-key paths.
@@ -191,8 +191,7 @@ describe("ECB Data Portal live integration smoke", () => {
 					};
 				};
 			};
-			const ds =
-				result.data.Structure?.Structures?.DataStructures?.DataStructure;
+			const ds = result.data.Structure?.Structures?.DataStructures?.DataStructure;
 			expect(ds).toBeTruthy();
 		}),
 		20_000,

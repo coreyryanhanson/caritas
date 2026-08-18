@@ -3,7 +3,7 @@
  *
  * Tests the live NCBI E-utilities API (`https://eutils.ncbi.nlm.nih.gov/entrez/eutils`):
  * parses the recipe and executes every defined operation against the live endpoint.
- * The unique-DOI `esearch` assertion is the design-doc A1 proof — a query that
+ * The unique-DOI `esearch` assertion is the A1 proof — a query that
  * returns exactly one `<Id>` must box into a one-element array (third independent
  * A1 confirmation after arXiv and the framework axis-E unit fixture).
  *

@@ -4,7 +4,7 @@
  * Tests the live arXiv API (`export.arxiv.org/api/query`): parses the recipe,
  * executes every defined operation against the live endpoint, and asserts the
  * response has the expected shape. The `max_results=1` / single-id array
- * assertion is the design-doc A1 proof; the unprefixed-field + serverTotal
+ * assertion is the A1 proof; the unprefixed-field + serverTotal
  * assertions are the A2 proof.
  *
  * Skipped in bare CI — opt in via HOST_INTEGRATION=1.

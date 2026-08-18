@@ -83,9 +83,9 @@ with an embedded `files[]` array — no envelope, no pagination, no list op:
 }
 ```
 
-## Additional operations (rollout Batch B)
+## Additional operations
 
-The 3 operations below were added during the rollout from the
+The 3 operations below were added from the
 `endpoint-coverage-plan.md` audit. All are read-only, no auth.
 
 ### `getItemField` — read a single top-level metadata field

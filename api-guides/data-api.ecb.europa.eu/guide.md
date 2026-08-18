@@ -187,10 +187,10 @@ rates (`EXR`), interest rates, money aggregates, prices, and more.
 `GET /service/data/{flowRef}/{key}` returns observations for a series key /
 dataflow as **SDMX-ML Generic Data** XML. The response is **prefix-everywhere**
 (`message:GenericData`, `generic:Series`, `generic:Obs`, `common:Structure`
-— a prefix on every element). The framework's `removeNSPrefix` (A2 fix)
+— a prefix on every element). The framework's `removeNSPrefix`
 strips those prefixes, so the parsed JSON uses clean local names and
 `data.GenericData.DataSet.Series` resolves without literal colon-keys
-(`message:DataSet…`) — proven live (see the design-doc B4 / A2 record).
+(`message:DataSet…`) — proven live.
 Each response holds a single `<DataSet>` with one or more `generic:Series`,
 each `SeriesKey` a list of `Attribute`-style `Value` objects
 (`@_id`/`@_value` dimension codes) and each `Obs` an `ObsDimension` +
@@ -198,8 +198,7 @@ each `SeriesKey` a list of `Attribute`-style `Value` objects
 
 **A1 is not exercised here** — the data resource returns a single
 `<DataSet>` and the op is a single-shot `restGet` (no paging param), so the
-A1 `paginate`-only fix does not apply. A1 is already proven on arXiv
-(Sprint 2) + PubMed (Sprint 4).
+`paginate`-only fix does not apply. A1 is already proven on arXiv + PubMed.
 
 ### `getDataJson` — SDMX-JSON (compact JSON)
 
@@ -218,7 +217,7 @@ observation with the series key, dimension codes, `TIME_PERIOD`, and
 This op declares `parse.format: text` for **raw passthrough** — the body is
 returned as a plain string and the agent splits/parses the CSV itself.
 
-> `ponytail:` CSV is still riding the parked `format: text` raw-passthrough
+> CSV is still riding the parked `format: text` raw-passthrough
 > path here. Promoting it to a first-class built-in `ResponseFormat`
 > (structured row/cell parsing) is **deferred** until a guide needs
 > structured cell access beyond raw passthrough.

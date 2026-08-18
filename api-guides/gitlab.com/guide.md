@@ -253,7 +253,7 @@ hammer the API or run into the 50k-offset limit below.
 ## Users family
 
 The users ops (`getAuthenticatedUser`, `listUsers`, `getUser`) were
-originally deferred here as auth-gated (verified 2026-08-11: `GET /api/v4/users`,
+initially auth-gated (verified 2026-08-11: `GET /api/v4/users`,
 `GET /users?search=…`, and `GET /users/{id}` all return 403 Forbidden
 anonymously), and now ship with the optional token. Only an exact
 `users?username=…` lookup worked anonymously; with the token the whole family

@@ -148,9 +148,7 @@ describe("datos.gob.es Group B — distributions", () => {
 			const items = unwrapItems(result);
 			// Not every dataset has distributions published; empty is tolerated.
 			if (items.length > 0) {
-				expect((items[0] as { _about?: string })._about).toContain(
-					"/resource/",
-				);
+				expect((items[0] as { _about?: string })._about).toContain("/resource/");
 			}
 		}),
 		20_000,
@@ -187,7 +185,7 @@ describe("datos.gob.es Group C — lookup tables", () => {
 	// vocabulary item (<miteco-hvd>, a relative URI with no base) on page 0. Not a
 	// WAF block, not a format/param issue (every format 500s on page 0; _page=1
 	// returns 200). See the plan's "Implementation notes". Bare CI (the binding
-	// gate) skips this; live is best-effort per the rollout's C2 rule.
+	// gate) skips this; live is best-effort per the plan's C2 rule.
 	itWhen(
 		"listSpatial returns an LDA envelope with non-empty items",
 		withTempDirs(DOMAIN)(async ({ guidesDir }) => {
@@ -296,9 +294,7 @@ describe("datos.gob.es Group E — NTI territory", () => {
 			const result = await fetchOp(guidesDir, "getCountrySpain");
 			const items = unwrapItems(result);
 			expect(items.length).toBeGreaterThan(0);
-			expect((items[0] as { _about?: string })._about).toContain(
-				"/Pais/España",
-			);
+			expect((items[0] as { _about?: string })._about).toContain("/Pais/España");
 		}),
 		20_000,
 	);

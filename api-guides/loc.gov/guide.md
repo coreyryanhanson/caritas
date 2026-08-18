@@ -134,7 +134,7 @@ operations:
           `item`, `cite_this`, `resources`).
 ---
 
-> Rollout Batch B: 5 operations added (Groups A–D). The `{format}` path
+> Additional operations: 5 operations added (Groups A–D). The `{format}` path
 > param has **10 documented enum values**: `audio`, `books`,
 > `film-and-videos`, `legislation`, `manuscripts`, `maps`, `newspapers`,
 > `photos`, `notated-music`, `web-archives` (the guide schema has no `enum:`
@@ -171,9 +171,9 @@ ceiling.
 
 `GET /item/{id}?fo=json` returns one item record. Non-paginated `restGet`.
 
-## Additional operations (rollout Batch B)
+## Additional operations
 
-The 5 operations below were added during the rollout from the
+The 5 operations below were added from the
 `endpoint-coverage-plan.md` audit (Groups A–D). All are read-only, no auth.
 
 ### `listCollections` — browse all collections (nextLink pagination)

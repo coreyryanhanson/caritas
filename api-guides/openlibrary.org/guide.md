@@ -241,7 +241,7 @@ operations:
 Open Library exposes bibliographic search with **no auth**. Internet Archive
 open data; bibliographic metadata is CC0-ish.
 
-> Expanded 2026-08 (rollout Batch C) to cover 20 read-only endpoints across
+> Expanded 2026-08 to cover 20 read-only endpoints across
 > 7 families. Path params (`{olid}`, `{subject}`, `{username}`,
 > `{list_id}`, `{seed_type}`, `{seed_id}`, `{year}`/`{month}`/`{day}`,
 > `{kind}`, `{id_type}`, `{id_value}`) are inferred from `{token}` in each

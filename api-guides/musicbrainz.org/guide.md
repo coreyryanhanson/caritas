@@ -628,7 +628,7 @@ User-Agent required). MusicBrainz data is **CC0** (public domain).
 
 ## Operations
 
-The base is **Artist search** (G5: JSON/XML artist search). The rollout added a
+The base is **Artist search** (G5: JSON/XML artist search). This guide covers a
 **curated subset** of read-only metadata endpoints across the 13 core entities:
 11 searches, 12 lookups, 7 browses, 3 non-MBID lookups (discid / isrc / iswc),
 URL-by-resource, and the genre list. All JSON ops accept `fmt=json` (default)

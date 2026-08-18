@@ -155,9 +155,9 @@ next_page_url, results[]}`. The `params` block also declares the high-value
 date ranges, agency/type filters, `order`, `page`, `fields[]`) so the agent
 knows they exist; the API accepts arbitrary `conditions[…]` keys.
 
-## Additional operations (rollout Batch B)
+## Additional operations
 
-The 13 operations below were added during the rollout from the
+The 13 operations below were added from the
 `endpoint-coverage-plan.md` audit (Groups A–E). All are read-only, no auth,
 and point at `/api/v1/*` JSON only — never the HTML `/developers` site
 (reCAPTCHA wall, see `../WAF-NOTES.md`).

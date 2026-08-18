@@ -295,8 +295,8 @@ Paginated search. Returns up to `pageSize` (10) PMIDs per page in
 `eSearchResult.IdList.Id`; `eSearchResult.Count` surfaces the **total hit
 count** as `serverTotal`. Offset-limit pagination via `retstart`/`retmax`;
 an empty `<IdList/>` past the last result terminates the walk. A page with a
-**single** `<Id>` is normalized to a one-element array (the design-doc A1 fix
-— proven live by a unique-DOI query that returns exactly one PMID).
+**single** `<Id>` is normalized to a one-element array — proven live by a
+unique-DOI query that returns exactly one PMID).
 
 **Efficient search→records flow:** call `esearch` first with
 `rettype=count` for the hit count, or the paginated form for a specific

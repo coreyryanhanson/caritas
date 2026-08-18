@@ -2,13 +2,13 @@
  * Interactive op probe — exercise a live operation through the REAL executor
  * (`restGet` / `paginate` from `core/helpers.js`) without writing a guide.
  *
- * Reads the guide from the REPO's `api-guides/<domain>/guide.md` (the file the
- * rollout edits), resolves the named operation, and runs it against the live
- * endpoint — printing the actual request URLs (incl. every pagination page)
- * and the parsed result. This is how an agent verifies a candidate op (via,
- * itemsPath, pagination style, params) before committing the YAML, and — for
- * #14 services.dnb.de — directly inspects the per-page URLs to confirm or
- * refute the strict-OAI `resumptionToken` risk in the rollout doc.
+ * Reads the guide from the REPO's `api-guides/<domain>/guide.md`, resolves
+ * the named operation, and runs it against the live endpoint — printing the
+ * actual request URLs (incl. every pagination page) and the parsed result.
+ * This is how an agent verifies a candidate op (via, itemsPath, pagination
+ * style, params) before committing the YAML, and — for services.dnb.de —
+ * directly inspects the per-page URLs to confirm or refute the strict-OAI
+ * `resumptionToken` risk in that guide.
  *
  * Dev tooling, not shipped (api-guides/ is excluded from the npm tarball).
  *
@@ -86,9 +86,7 @@ async function main(): Promise<void> {
 			const lines = [
 				`  via: paginate · ${r.pages} page(s) · ${r.totalFetched} item(s)` +
 					(r.ceilingHit ? " · CEILING" : "") +
-					(r.serverTotal !== undefined
-						? ` · serverTotal: ${r.serverTotal}`
-						: ""),
+					(r.serverTotal === undefined ? "" : ` · serverTotal: ${r.serverTotal}`),
 			];
 			r.urls.forEach((u, i) => lines.push(`  url[${i}]: ${u}`));
 			lines.push(`  items: ${trunc(JSON.stringify(r.items), 2000)}`);

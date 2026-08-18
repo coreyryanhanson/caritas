@@ -1,8 +1,8 @@
 /**
  * caritas parse-validity — every bundled recipe parses cleanly against the
  * `pi-lean-host` parser (package import, resolving the local devDep's
- * `exports` map). No network. This is caritas's per-PR parse gate
- * (Sprint 5's parse-validity CI tier); recipe-correctness mock-transport
+ * `exports` map). No network. This is caritas's per-PR parse gate;
+ * recipe-correctness mock-transport
  * tests (`transform.test.ts`, `helper.test.ts`) live alongside each recipe.
  */
 
