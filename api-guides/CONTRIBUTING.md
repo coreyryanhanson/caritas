@@ -81,8 +81,16 @@ auth:
   kind: static-key
   secretRefs:                  # or secretQueryRefs: for ?key= style
     x-cg-demo-api-key: api_key # headerName: secretName
+  # headerPrefixes:            # headerName → prefix added for scheme-style
+  #   Authorization: "Bearer "  #   headers (e.g. GitHub/GitLab) — the store
+  #                             #   holds the RAW token; the guide adds the prefix
   requires: [api_key]          # ─ or optional if the API works unauthenticated
 ```
+
+**Rule of thumb:** the store holds the **raw credential**; the guide declares
+how it is presented. For scheme-prefixed headers (`Authorization: Bearer …`)
+declare `headerPrefixes` so provisioning pastes the raw token — never smuggle
+the `Bearer ` prefix into the stored value.
 
 **Parser-enforced** (every failure carries a `fix:` hint — a bad guide fails
 at parse time, not fetch time):
@@ -90,6 +98,8 @@ at parse time, not fetch time):
 - `secretRefs` / `secretQueryRefs` are rejected on `auth.kind: none`.
 - Every ref name must be declared in `requires` ∪ `optional`; a name in
   **both** is an error.
+- Each `headerPrefixes` key must also be a `secretRefs` header; empty prefix
+  strings and `headerPrefixes` on `auth.kind: none` are rejected.
 - A `secretQueryRefs` param name that also appears in any operation's `params`
   map is an error — the agent must not be able to set a code-injected param.
 - `auth.kind: oauth2` is rejected at parse ("not yet implemented").

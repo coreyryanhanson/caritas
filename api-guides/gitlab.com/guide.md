@@ -10,6 +10,8 @@ auth:
   kind: static-key
   secretRefs:
     Authorization: api_key
+  headerPrefixes:
+    Authorization: "Bearer "
   optional:
     - api_key
 responseShape:
@@ -166,12 +168,13 @@ on GitLab.com** — 403 Forbidden anonymously). Root of all paths is `/api/v4`.
 10 requests/min unauthenticated → 60/min with a PAT. Provision the PAT once:
 
 ```sh
-/api secrets gitlab.com api_key "Bearer glpat-..."
+/api secrets gitlab.com api_key "<raw PAT>"
 ```
 
-The store value is injected **verbatim** as the `Authorization` header, so it
-must include the `Bearer` scheme prefix (a bare token is rejected with 401).
-When absent, calls proceed unauthenticated with the
+The store holds the **raw token**; the guide declares that it is presented as
+`Bearer <token>` (`headerPrefixes`), so a bare token is accepted and a stored
+`Bearer` prefix should **not** be added. When absent, calls proceed
+unauthenticated with the
 `auth: ok (optional … not provisioned)` footer; when present, **every op** gets
 the injected header (SSRF-guarded redirects + cache-skip) and the 60/min rate
 with the `auth: ok (optional provisioned)` footer. The value never enters agent

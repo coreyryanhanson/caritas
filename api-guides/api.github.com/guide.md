@@ -10,6 +10,8 @@ auth:
   kind: static-key
   secretRefs:
     Authorization: api_key
+  headerPrefixes:
+    Authorization: "Bearer "
   optional:
     - api_key
 responseShape:
@@ -905,12 +907,13 @@ ToS permits API access; this recipe reads metadata + CI status only.
 60 requests/hr unauthenticated → 5000/hr with a PAT. Provision the PAT once:
 
 ```sh
-/api secrets github.com api_key "Bearer ghp_..."
+/api secrets github.com api_key "<raw PAT>"
 ```
 
-The store value is injected **verbatim** as the `Authorization` header, so it
-must include the `Bearer` scheme prefix (a bare token is rejected with 401).
-When absent, calls proceed unauthenticated under the 60/hr rate with the
+The store holds the **raw token**; the guide declares that it is presented as
+`Bearer <token>` (`headerPrefixes`), so a bare token is accepted and a stored
+`Bearer` prefix should **not** be added. When absent, calls proceed
+unauthenticated under the 60/hr rate with the
 `auth: ok (optional … not provisioned)` footer; when present, **every op** gets
 the injected header (SSRF-guarded redirects + cache-skip) and the 5000/hr rate
 with the `auth: ok (optional provisioned)` footer. The value never enters agent

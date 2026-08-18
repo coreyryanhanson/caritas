@@ -11,7 +11,8 @@
  * The guide is `auth.optional`; the suite runs AUTHENTICATED (the stored PAT
  * is injected on every op) so it lands on the 5000/hr quota, not the 60/hr
  * anonymous one — the full 58-request file runs in one pass. Requires a
- * provisioned PAT at `/api secrets github.com` (value `Bearer <token>`).
+ * provisioned PAT at `/api secrets github.com` (raw token; the guide's
+ * `headerPrefixes` adds the `Bearer ` scheme).
  */
 
 import { describe, expect } from "vitest";
