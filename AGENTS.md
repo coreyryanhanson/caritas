@@ -28,16 +28,15 @@ No `lint` or `typecheck` script exists. `tsconfig.json` is `noEmit` strict
 (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`,
 `allowImportingTsExtensions`); type errors surface via vitest/tsx at runtime,
 not a separate gate. `include` is `api-guides/**/*.ts` + `vitest.config.ts`
+
 - `__tests__/**/*.ts` — root-level `.ts` files outside those are not
 type-checked.
 
-## The devDep is a local path
+## The devDep is published
 
-`pi-lean-host` resolves via `"file:../pi-browser/packages/pi-lean-host"` —
-that repo **must** exist at `../pi-browser/packages/pi-lean-host` for
-`npm ci` to work. Bumping the devDep is a deliberate, reviewed PR (a host
-schema change should be a visible event here, not a silent break). Switching
-to a pinned published npm version is a deferred maintainer step.
+`pi-lean-host` is installed from npm as a pinned version in `devDependencies`.
+Bumping it is a deliberate, reviewed PR (a host schema change should be a
+visible event here, not a silent break).
 
 ## Test tiers and the live gate
 
@@ -129,10 +128,8 @@ at the `apiFetch` pipeline, not raw `fetch()` in test code.
 
 ## Drift posture
 
-Recipes are proven as of the `verified` date in each `guide.md`. Public APIs
-change; a recipe may drift. There is **no `README.md` yet** — the planned
-drift disclaimer (per-recipe `verified`-date provenance + the `/api learn` /
-`/api probe` authoring escape hatch) is still TODO per
-`docs/design/guides-decoupling-caritas-remaining-caritas.md`. Keep caritas's
-drift disclaimer separate from any host-side "unstable" disclaimer — never
-fold them together.
+Recipes are proven as of the `verified` date in each `guide.md`, and
+`README.md` carries the drift disclaimer (per-recipe `verified`-date
+provenance + the `/api learn` / `/api probe` authoring escape hatch). Keep
+caritas's drift disclaimer separate from any host-side "unstable"
+disclaimer — never fold them together.

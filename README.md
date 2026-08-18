@@ -110,9 +110,8 @@ that drifted.
 ## For contributors
 
 This is a **devDep-only source repo — never published to npm.** Its own test
-tooling is the consumer: `pi-lean-host` resolves via a local-path
-`"file:../pi-lean-host"` devDep, so that repo must exist at
-`../pi-lean-host` (or wherever your local path points) for `npm ci` to work.
+tooling is the consumer: `pi-lean-host` is installed from npm as a pinned
+version in `devDependencies`.
 
 Before adding a guide, read [`api-guides/CONTRIBUTING.md`](api-guides/CONTRIBUTING.md)
 — it covers the recipe shape, when to reach for a `helper.ts`, and the
@@ -144,13 +143,11 @@ HOST_INTEGRATION=1 npm test    # live tier — real network calls
 npx vitest run api-guides/boe.es/helper.test.ts   # one file
 ```
 
-### Local-path devDep
+### Pinned npm devDep
 
-`pi-lean-host` is pinned via `"file:../pi-browser/packages/pi-lean-host"` for
-development. Bumping it is a deliberate, reviewed PR — a host schema change
-should be a visible event here, not a silent break. Switching to a pinned
-published npm version is a deferred maintainer step (after host publishes
-with its exports map).
+`pi-lean-host` is installed as a pinned version in `devDependencies`.
+Bumping it is a deliberate, reviewed PR — a host schema change should be a
+visible event here, not a silent break.
 
 ---
 
