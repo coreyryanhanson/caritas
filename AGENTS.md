@@ -12,8 +12,15 @@ guide is a versioned YAML recipe consumed by the `pi-lean-host` framework.
   (the live-only files). Use this for a fast, deterministic, no-network run.
 - Run one file: `npx vitest run api-guides/boe.es/helper.test.ts`
 - Run a single test by name: `npx vitest run -t "parses cleanly"`
-- Live (nightly) tier: `HOST_INTEGRATION=1 npx vitest run` — runs the real
-  network calls. Red is a **drift signal**, not a gate.
+- Live (nightly) tier: `npm run test:integration` — runs `scripts/test-integration.sh`
+  (the real network calls) and **persists a timestamped full log to
+  `integration-results/<timestamp>.log`** (`mkdir`-ed on the fly; gitignored).
+  Use the script, not a bare `HOST_INTEGRATION=1 npx vitest run` — the bare
+  invocation burns upstream calls and leaves no trace, so you can't read the
+  last run from disk. Pass extra args through after the script name
+  (`npm run test:integration -- api-guides/boe.es/endpoint-coverage.test.ts`).
+  Red is a **drift signal**, not a gate. Prefer reading the latest
+  `integration-results/*.log` over re-running.
 - Probe one op against the live endpoint without writing a test:
   `npx tsx api-guides/_shared/probe-op.ts <domain> <operation> [--params '{"k":"v"}'] [--gatherAll]`
 
