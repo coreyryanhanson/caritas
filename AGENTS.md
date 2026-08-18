@@ -27,8 +27,9 @@ guide is a versioned YAML recipe consumed by the `pi-lean-host` framework.
 No `lint` or `typecheck` script exists. `tsconfig.json` is `noEmit` strict
 (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`,
 `allowImportingTsExtensions`); type errors surface via vitest/tsx at runtime,
-not a separate gate. `include` is only `api-guides/**/*.ts` + `vitest.config.ts`
-— root-level `.ts` files outside `api-guides/` are not type-checked.
+not a separate gate. `include` is `api-guides/**/*.ts` + `vitest.config.ts`
+- `__tests__/**/*.ts` — root-level `.ts` files outside those are not
+type-checked.
 
 ## The devDep is a local path
 

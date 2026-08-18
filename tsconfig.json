@@ -19,6 +19,6 @@
 		"noUncheckedSideEffectImports": true,
 		"moduleDetection": "force"
 	},
-	"include": ["api-guides/**/*.ts", "vitest.config.ts"],
+	"include": ["api-guides/**/*.ts", "vitest.config.ts", "__tests__/**/*.ts"],
 	"exclude": ["node_modules"]
 }
