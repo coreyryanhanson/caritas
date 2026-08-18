@@ -162,3 +162,19 @@ real ones.
   invent endpoints.
 - **Read-only only.** If unsure whether an endpoint mutates, treat it
   as out of scope and note the uncertainty — don't add it.
+
+## Disclaimers: keep the two distinct
+
+caritas carries a **perpetual drift disclaimer** (per-recipe `verified:`-date
+provenance: "proven as of a date, may break"). It applies forever to a
+content library of third-party API recipes, no matter how mature
+pi-lean-host gets, and it lives in the repo `README.md`.
+
+pi-lean-host carries its own **pre-1.0 "schema still settling" disclaimer**,
+which is *removed* once the framework locks its schema. That one lives in the
+host repo, not here.
+
+These answer different questions and must **never be folded into one
+statement**. When editing the README's drift section, do not re-import host's
+pre-lockstep framing, and do not drop caritas's perpetual framing at
+lockstep — the two are deliberately separate.
