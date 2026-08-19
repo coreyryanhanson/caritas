@@ -13,9 +13,9 @@
 
 import { describe, expect } from "vitest";
 import {
-	withTempDirs,
 	createFetchOp,
 	itWhen,
+	withTempDirs,
 } from "../_shared/test-harness.js";
 
 const DOMAIN = "ncbi.nlm.nih.gov"; // routing domain (the dir is eutils.ncbi.nlm.nih.gov)
@@ -46,7 +46,9 @@ describe("PubMed E-utilities live integration smoke", () => {
 			expect(loaded.malformed).toHaveLength(0);
 
 			const guide = loaded.guides["eutils.ncbi.nlm.nih.gov"]!;
-			expect(guide.apiHost).toBe("https://eutils.ncbi.nlm.nih.gov/entrez/eutils");
+			expect(guide.apiHost).toBe(
+				"https://eutils.ncbi.nlm.nih.gov/entrez/eutils",
+			);
 			expect(guide.auth.kind).toBe("static-key");
 			expect(guide.auth.secretQueryRefs).toEqual({ api_key: "api_key" });
 			expect(guide.auth.optional).toEqual(["api_key"]);

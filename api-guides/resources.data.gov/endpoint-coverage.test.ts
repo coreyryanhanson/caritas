@@ -24,8 +24,8 @@
  * parse smoke runs on HOST_INTEGRATION alone.
  */
 
-import { describe, it, expect } from "vitest";
-import { withTempDirs, itWhen } from "../_shared/test-harness.js";
+import { describe, expect, it } from "vitest";
+import { itWhen, withTempDirs } from "../_shared/test-harness.js";
 
 const HOST_INTEGRATION = process.env["HOST_INTEGRATION"] === "1";
 // Live ops need a real key — DEMO_KEY (the shipped placeholder) is

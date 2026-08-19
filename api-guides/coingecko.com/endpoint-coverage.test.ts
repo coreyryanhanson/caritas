@@ -10,7 +10,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { withTempDirs, itWhen } from "../_shared/test-harness.js";
+import { itWhen, withTempDirs } from "../_shared/test-harness.js";
 
 const DOMAIN = "coingecko.com";
 
@@ -173,7 +173,9 @@ describe("CoinGecko live integration (authenticated)", () => {
 			expect(global.path).toBe("/global");
 			expect(global.via).toBe("restGet");
 
-			const globalDefi = guide.operations.find((o) => o.name === "getGlobalDefi")!;
+			const globalDefi = guide.operations.find(
+				(o) => o.name === "getGlobalDefi",
+			)!;
 			expect(globalDefi.path).toBe("/global/decentralized_finance_defi");
 			expect(globalDefi.via).toBe("restGet");
 
@@ -183,7 +185,9 @@ describe("CoinGecko live integration (authenticated)", () => {
 			expect(categoriesList.path).toBe("/coins/categories/list");
 			expect(categoriesList.via).toBe("restGet");
 
-			const categories = guide.operations.find((o) => o.name === "getCategories")!;
+			const categories = guide.operations.find(
+				(o) => o.name === "getCategories",
+			)!;
 			expect(categories.path).toBe("/coins/categories");
 			expect(categories.via).toBe("restGet");
 			expect(categories.params["order"]!.default).toBe("market_cap_desc");
@@ -205,7 +209,9 @@ describe("CoinGecko live integration (authenticated)", () => {
 			expect(exchangesList.path).toBe("/exchanges/list");
 			expect(exchangesList.via).toBe("restGet");
 
-			const exchanges = guide.operations.find((o) => o.name === "getExchanges")!;
+			const exchanges = guide.operations.find(
+				(o) => o.name === "getExchanges",
+			)!;
 			expect(exchanges.path).toBe("/exchanges");
 			expect(exchanges.via).toBe("paginate");
 			expect(exchanges.pagination?.pageSizeParam).toBe("per_page");
@@ -484,12 +490,16 @@ describe("CoinGecko live integration (authenticated)", () => {
 	itWhen(
 		"getContractMarketChartRange fetches a token chart within a time range",
 		withTempDirs(DOMAIN)(async ({ guidesDir }) => {
-			const result = await runRestGet(guidesDir, "getContractMarketChartRange", {
-				id: "ethereum",
-				contract_address: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
-				from: isoDate(new Date(Date.now() - 3 * 86_400_000)),
-				to: isoDate(new Date(Date.now() - 86_400_000)),
-			});
+			const result = await runRestGet(
+				guidesDir,
+				"getContractMarketChartRange",
+				{
+					id: "ethereum",
+					contract_address: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+					from: isoDate(new Date(Date.now() - 3 * 86_400_000)),
+					to: isoDate(new Date(Date.now() - 86_400_000)),
+				},
+			);
 			const data = result.data as { prices: unknown[] };
 			expect(Array.isArray(data["prices"])).toBe(true);
 			expect(data["prices"].length).toBeGreaterThan(0);

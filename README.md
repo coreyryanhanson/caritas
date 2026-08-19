@@ -149,6 +149,16 @@ npx vitest run api-guides/boe.es/helper.test.ts   # one file
 Bumping it is a deliberate, reviewed PR — a host schema change should be a
 visible event here, not a silent break.
 
+### Pre-commit hooks
+
+`npm install` also sets up a pre-commit hook via **husky** — it runs
+**lint-staged**, which formats + lints staged `.ts` files with
+`biome check --write` and autofixes what it can. It does **not** run the
+test suite (that's CI's job). Two caveats: the hook operates on the *entire
+staged file*, not just staged hunks, so it may reformat unstaged portions of
+a partially-staged file; and if it ever blocks you, `--no-verify` bypasses
+it (the CI gate still applies on push).
+
 ---
 
 ## Relationship to pi-lean-host

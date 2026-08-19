@@ -10,9 +10,9 @@
 
 import { describe, expect } from "vitest";
 import {
-	withTempDirs,
 	createFetchOp,
 	itWhen,
+	withTempDirs,
 } from "../_shared/test-harness.js";
 
 const DOMAIN = "datos.gob.es";
@@ -148,7 +148,9 @@ describe("datos.gob.es Group B — distributions", () => {
 			const items = unwrapItems(result);
 			// Not every dataset has distributions published; empty is tolerated.
 			if (items.length > 0) {
-				expect((items[0] as { _about?: string })._about).toContain("/resource/");
+				expect((items[0] as { _about?: string })._about).toContain(
+					"/resource/",
+				);
 			}
 		}),
 		20_000,
@@ -294,7 +296,9 @@ describe("datos.gob.es Group E — NTI territory", () => {
 			const result = await fetchOp(guidesDir, "getCountrySpain");
 			const items = unwrapItems(result);
 			expect(items.length).toBeGreaterThan(0);
-			expect((items[0] as { _about?: string })._about).toContain("/Pais/España");
+			expect((items[0] as { _about?: string })._about).toContain(
+				"/Pais/España",
+			);
 		}),
 		20_000,
 	);

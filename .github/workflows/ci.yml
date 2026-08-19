@@ -1,0 +1,48 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: # allow manual re-runs for debugging without a no-op push
+
+# Cancel superseded runs on the same ref — recipes are cheap to re-run,
+# no point queuing a stale commit.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false # read-only workflow; never write the token into .git/config
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint # biome ci — lint + format report, exits non-zero on findings
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false # read-only workflow; never write the token into .git/config
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24 # matches local dev env (nvm v24.17)
+          cache: npm # caches ~/.npm from package-lock.json
+
+      - run: npm ci # package-lock.json is committed (confirmed)
+
+      - run: npm run test:ci

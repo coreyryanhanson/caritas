@@ -16,7 +16,7 @@
  */
 
 import { describe, expect } from "vitest";
-import { withTempDirs, itWhen } from "../_shared/test-harness.js";
+import { itWhen, withTempDirs } from "../_shared/test-harness.js";
 
 const DIR = "api.github.com";
 const DOMAIN = "github.com";

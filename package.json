@@ -7,10 +7,18 @@
 	"scripts": {
 		"test": "vitest run",
 		"test:ci": "vitest run --exclude='**/endpoint-coverage.test.ts'",
-		"test:integration": "bash scripts/test-integration.sh"
+		"test:integration": "bash scripts/test-integration.sh",
+		"lint": "biome ci",
+		"prepare": "husky"
+	},
+	"lint-staged": {
+		"*.ts": "biome check --write"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "1.9.4",
 		"@types/node": "^25.9.1",
+		"husky": "^9.1.7",
+		"lint-staged": "^17.3.0",
 		"pi-lean-host": "0.2.1",
 		"tsx": "^4.19.2",
 		"typescript": "^6.0.3",

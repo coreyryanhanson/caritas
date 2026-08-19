@@ -12,12 +12,12 @@
  * `/api secrets etherscan.io`.
  */
 
-import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseApiGuide } from "pi-lean-host/core/parse-api-guide.js";
-import { withTempDirs, itWhen } from "../_shared/test-harness.js";
+import { describe, expect, it } from "vitest";
+import { itWhen, withTempDirs } from "../_shared/test-harness.js";
 
 const DOMAIN = "etherscan.io";
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -49,7 +49,9 @@ async function throttleLive(): Promise<void> {
 
 /** Resolve the stored key-injected query auth for a live restGet against the guide. */
 async function authFor(guidesDir: string) {
-	const { resolveSecretQueryParams } = await import("pi-lean-host/core/auth.js");
+	const { resolveSecretQueryParams } = await import(
+		"pi-lean-host/core/auth.js"
+	);
 	const { setUserGuidesDir, findGuidesByDomain } = await import(
 		"pi-lean-host/core/guide-store.js"
 	);

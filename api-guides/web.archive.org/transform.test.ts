@@ -13,16 +13,16 @@
  *    (the end-to-end scenario for `queryCdx` without network).
  */
 
-import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import {
-	mkdtempSync,
 	mkdirSync,
-	writeFileSync,
-	rmSync,
+	mkdtempSync,
 	readFileSync,
+	rmSync,
+	writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 // Mock the transport layer BEFORE any imports that use it.
 vi.mock("pi-lean-host/core/transport.js", async () => ({
@@ -32,12 +32,15 @@ vi.mock("pi-lean-host/core/transport.js", async () => ({
 	fetchUrl: vi.fn(),
 }));
 
+import type { ApiGuide, Operation } from "pi-lean-host/core/api-guide-types.js";
+import {
+	invalidateCache,
+	setUserGuidesDir,
+} from "pi-lean-host/core/guide-store.js";
 import { restGet } from "pi-lean-host/core/helpers.js";
 import { loadTransform } from "pi-lean-host/core/local-helpers.js";
 import { loadApiGuidesFromDir } from "pi-lean-host/core/parse-api-guide.js";
-import { setUserGuidesDir, invalidateCache } from "pi-lean-host/core/guide-store.js";
 import { transform } from "./helper.js";
-import type { ApiGuide, Operation } from "pi-lean-host/core/api-guide-types.js";
 
 // ── Fixtures — the CDX output=json array-of-arrays (header + rows) ─────
 

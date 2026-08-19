@@ -19,14 +19,14 @@
  * `--gatherAll` walks every page (paginate ops only); default is a single page.
  */
 
-import {
-	setUserGuidesDir,
-	invalidateCache,
-	findGuidesByDomain,
-} from "pi-lean-host/core/guide-store.js";
-import { restGet, paginate } from "pi-lean-host/core/helpers.js";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import {
+	findGuidesByDomain,
+	invalidateCache,
+	setUserGuidesDir,
+} from "pi-lean-host/core/guide-store.js";
+import { paginate, restGet } from "pi-lean-host/core/helpers.js";
 
 const _dirname = dirname(fileURLToPath(import.meta.url));
 // _shared/ lives one level under api-guides/, so the guides root is its parent.
@@ -84,16 +84,14 @@ async function main(): Promise<void> {
 				gatherAll,
 			});
 			const lines = [
-				`  via: paginate · ${r.pages} page(s) · ${r.totalFetched} item(s)` +
-					(r.ceilingHit ? " · CEILING" : "") +
-					(r.serverTotal === undefined ? "" : ` · serverTotal: ${r.serverTotal}`),
+				`  via: paginate · ${r.pages} page(s) · ${r.totalFetched} item(s)${r.ceilingHit ? " · CEILING" : ""}${r.serverTotal === undefined ? "" : ` · serverTotal: ${r.serverTotal}`}`,
 			];
 			r.urls.forEach((u, i) => lines.push(`  url[${i}]: ${u}`));
 			lines.push(`  items: ${trunc(JSON.stringify(r.items), 2000)}`);
 			console.log(lines.join("\n"));
 		} else {
 			const r = await restGet(guide.apiHost, op, params, guide);
-			console.log(`  via: restGet`);
+			console.log("  via: restGet");
 			console.log(`  url: ${r.url}`);
 			console.log(`  data: ${trunc(JSON.stringify(r.data, null, 2), 2000)}`);
 		}
