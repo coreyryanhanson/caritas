@@ -24,13 +24,19 @@ guide is a versioned YAML recipe consumed by the `pi-lean-host` framework.
 - Probe one op against the live endpoint without writing a test:
   `npx tsx api-guides/_shared/probe-op.ts <domain> <operation> [--params '{"k":"v"}'] [--gatherAll]`
 
-No `lint` or `typecheck` script exists. `tsconfig.json` is `noEmit` strict
-(`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`,
-`allowImportingTsExtensions`); type errors surface via vitest/tsx at runtime,
-not a separate gate. `include` is `api-guides/**/*.ts` + `vitest.config.ts`
-
-- `__tests__/**/*.ts` — root-level `.ts` files outside those are not
-type-checked.
+- `npm run lint` — `biome ci` (lint + format report, exits non-zero on
+  findings; no auto-fix). CI gates on this.
+- No separate `typecheck` script; `tsconfig.json` is `noEmit` strict
+  (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`,
+  `allowImportingTsExtensions`) and type errors surface via vitest/tsx at
+  runtime, not a dedicated gate. `include` is `api-guides/**/*.ts` +
+  `vitest.config.ts` + `__tests__/**/*.ts`; root-level `.ts` files outside
+  those are not type-checked.
+- Pre-commit (husky + lint-staged): `biome check --write` on staged `*.ts`
+  auto-fixes format/lint. Biome uses **tabs**; `noNonNullAssertion` and
+  `useLiteralKeys` are off. `biome ci` (the `lint` script / CI) does **not**
+  auto-fix, so a locally-passing commit can still fail CI — run
+  `npm run lint` before pushing.
 
 ## The devDep is published
 
@@ -40,7 +46,9 @@ visible event here, not a silent break).
 
 ## Test tiers and the live gate
 
-Two-tier CI by design (`.github/workflows/` does not exist yet):
+Two-tier test design. CI (`.github/workflows/ci.yml`) runs two jobs:
+`lint` (`biome ci`) and `test` (`npm run test:ci`); both `npm ci`, Node 24,
+no network, `cancel-in-progress` on the same ref. The two test tiers:
 
 - **Per-PR** (fast, gated, no network): `__tests__/all-guides-parse.test.ts`
   parses every recipe via `parseApiGuide`, plus the mocked-transport
