@@ -8,7 +8,7 @@
  * Co-located with the helper and guide it tests.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { withTempDirs } from "../_shared/test-harness.js";
 import boeHelper from "./helper.js";
 
@@ -142,7 +142,9 @@ describe("BOE helper — live endpoint compose", () => {
 	itWhen(
 		"ISO dates pass through callHelper unchanged (core dateParams handles them later)",
 		withTempDirs("boe.es")(async ({ guidesDir }) => {
-			const { setUserGuidesDir } = await import("pi-lean-host/core/guide-store.js");
+			const { setUserGuidesDir } = await import(
+				"pi-lean-host/core/guide-store.js"
+			);
 			const { callHelper } = await import("pi-lean-host/core/local-helpers.js");
 
 			setUserGuidesDir(guidesDir);
@@ -172,7 +174,9 @@ describe("BOE helper — live endpoint compose", () => {
 			);
 			const { callHelper } = await import("pi-lean-host/core/local-helpers.js");
 			const { restGet } = await import("pi-lean-host/core/helpers.js");
-			const { setUserGuidesDir } = await import("pi-lean-host/core/guide-store.js");
+			const { setUserGuidesDir } = await import(
+				"pi-lean-host/core/guide-store.js"
+			);
 
 			setUserGuidesDir(guidesDir);
 			const loaded = loadApiGuidesFromDir(guidesDir);

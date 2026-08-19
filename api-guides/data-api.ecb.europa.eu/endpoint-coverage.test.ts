@@ -14,9 +14,9 @@
 
 import { describe, expect } from "vitest";
 import {
-	withTempDirs,
 	createFetchOp,
 	itWhen,
+	withTempDirs,
 } from "../_shared/test-harness.js";
 
 const DIR = "data-api.ecb.europa.eu";
@@ -191,7 +191,8 @@ describe("ECB Data Portal live integration smoke", () => {
 					};
 				};
 			};
-			const ds = result.data.Structure?.Structures?.DataStructures?.DataStructure;
+			const ds =
+				result.data.Structure?.Structures?.DataStructures?.DataStructure;
 			expect(ds).toBeTruthy();
 		}),
 		20_000,

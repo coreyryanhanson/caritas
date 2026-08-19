@@ -8,7 +8,7 @@
  */
 
 import { describe, expect } from "vitest";
-import { withTempDirs, itWhen } from "../_shared/test-harness.js";
+import { itWhen, withTempDirs } from "../_shared/test-harness.js";
 
 // ── Per-recipe fetch helper (domain-specific; stays here, not in the harness) ──
 

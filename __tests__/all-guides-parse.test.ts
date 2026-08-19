@@ -6,11 +6,11 @@
  * tests (`transform.test.ts`, `helper.test.ts`) live alongside each recipe.
  */
 
-import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseApiGuide } from "pi-lean-host/core/parse-api-guide.js";
+import { describe, expect, it } from "vitest";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const GUIDES_DIR = join(__dirname, "..", "api-guides");
@@ -43,8 +43,7 @@ describe("all caritas recipes parse against pi-lean-host", () => {
 
 			if (!result.ok) {
 				throw new Error(
-					`${domain}: ${result.error.field} — expected ${result.error.expected}, found ${result.error.found}` +
-						(result.error.fix ? `\n  Fix: ${result.error.fix}` : ""),
+					`${domain}: ${result.error.field} — expected ${result.error.expected}, found ${result.error.found}${result.error.fix ? `\n  Fix: ${result.error.fix}` : ""}`,
 				);
 			}
 

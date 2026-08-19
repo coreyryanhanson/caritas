@@ -24,7 +24,7 @@ api-guides/<domain>/
                                      from the npm tarball, local dev only)
 ```
 
-**Test wiring:** `vitest.config.ts` includes `packages/*/**/*.test.ts`,
+**Test wiring:** `vitest.config.ts` includes `["api-guides/**/*.test.ts", "__tests__/**/*.test.ts"]`,
 so every co-located `*.test.ts` is picked up automatically — no central
 registration. `npm run test:ci` runs them; bare CI skips the live ones
 (they're `it.skip` unless `HOST_INTEGRATION=1`).

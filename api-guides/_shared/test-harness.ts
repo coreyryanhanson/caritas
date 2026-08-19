@@ -17,19 +17,19 @@
  */
 
 import {
-	mkdtempSync,
-	mkdirSync,
 	copyFileSync,
-	readdirSync,
-	statSync,
-	rmSync,
 	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readdirSync,
+	rmSync,
+	statSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { it } from "vitest";
 import type { TransformFn } from "pi-lean-host/core/local-helpers.js";
+import { it } from "vitest";
 
 const _dirname = dirname(fileURLToPath(import.meta.url));
 // _shared/ lives one level under api-guides/, so the guides root is its parent.
@@ -99,7 +99,9 @@ export function createFetchOp(
 		// raw data and the live assertions would be a silent lie.
 		let transformFn: TransformFn | null = null;
 		if (op.transform === true) {
-			const { loadTransform } = await import("pi-lean-host/core/local-helpers.js");
+			const { loadTransform } = await import(
+				"pi-lean-host/core/local-helpers.js"
+			);
 			transformFn = await loadTransform(match.dirName);
 		}
 		const passTransform = transformFn ?? undefined;

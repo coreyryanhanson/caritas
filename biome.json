@@ -1,0 +1,22 @@
+{
+	"$schema": "https://biomejs.dev/schemas/1.9/schema.json",
+	"files": {
+		"include": ["api-guides/**/*.ts", "__tests__/**/*.ts", "*.ts"]
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"style": {
+				"noNonNullAssertion": "off"
+			},
+			"complexity": {
+				"useLiteralKeys": "off"
+			}
+		}
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab"
+	}
+}

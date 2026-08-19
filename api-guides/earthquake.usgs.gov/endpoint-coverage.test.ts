@@ -10,9 +10,9 @@
 
 import { describe, expect } from "vitest";
 import {
-	withTempDirs,
 	createFetchOp,
 	itWhen,
+	withTempDirs,
 } from "../_shared/test-harness.js";
 
 const DOMAIN = "earthquake.usgs.gov";
