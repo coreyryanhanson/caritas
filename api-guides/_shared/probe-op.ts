@@ -6,7 +6,8 @@
  * the named operation, and runs it against the live endpoint — printing the
  * actual request URLs (incl. every pagination page) and the parsed result.
  * This is how an agent verifies a candidate op (via, itemsPath, pagination
- * style, params) before committing the YAML, and — for services.dnb.de —
+ * style, params) before committing the YAML, and — for the DNB
+ * (Deutsche Nationalbibliothek) guide —
  * directly inspects the per-page URLs to confirm or refute the strict-OAI
  * `resumptionToken` risk in that guide.
  *

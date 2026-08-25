@@ -1,20 +1,26 @@
 # Contributing an API guide
 
 > How a guide's tests stay decoupled from framework base code, and the
-> shape every guide's test files follow. `boe.es` is the reference template
+> shape every guide's test files follow. `boletin-oficial-del-estado` is the reference template
 > for no-auth guides — read it first, then copy its pattern. For a **keyed**
 > guide (`auth.kind: static-key`), start from a keyed recipe instead — see
 > [Authoring a keyed guide](#authoring-a-keyed-guide-static-key-auth).
 
 ## Directory layout
 
-Each guide lives in its own directory under `api-guides/<domain>/` and
-ships its **own** test files co-located with `guide.md`. Tests do **not**
+Each guide lives in its own directory under `api-guides/<slug(shortName)>/`
+and ships its **own** test files co-located with `guide.md`. Tests do **not**
 live in `packages/pi-lean-host/__tests__/` — that dir holds framework
 structural tests only.
 
+**Folder identity (pi-lean-host 0.4.0):** the folder name must equal
+`slug(shortName)` — the guide's `shortName` lowercased, non-alphanumeric runs
+replaced by `-` (e.g. `shortName: Boletín Oficial del Estado` → folder `boletin-oficial-del-estado`). A divergent folder
+routes the guide to malformed and it never loads; `api-learn` derives the
+save folder from `shortName` itself, so hand-written guides must match.
+
 ```text
-api-guides/<domain>/
+api-guides/<slug(shortName)>/
 ├── guide.md                       ← the recipe YAML
 ├── helper.ts                      ← optional; present when a guide needs a transform
 ├── endpoint-coverage-plan.md      ← frozen audit deliverable (read-only)
@@ -51,8 +57,8 @@ be zipped into row objects (MediaWiki `opensearch`, Wayback CDX), a fat
 `properties` bag that should be projected to a lean agent-ready set
 (USGS GeoJSON), or a structural reshape the parser can't do for you.
 
-Current guides with a helper: `boe.es`, `earthquake.usgs.gov`,
-`en.wikipedia.org-action`, `web.archive.org` — each closes a real gap the
+Current guides with a helper: `boletin-oficial-del-estado`, `usgs-earthquake`,
+`wikimedia-action`, `wayback-cdx-server` — each closes a real gap the
 recipe surface couldn't. The decision criteria live in
   [`api-helper-escape-valve.md`](https://github.com/coreyryanhanson/pi-lean-dimension/blob/main/packages/pi-lean-host/docs/design/api-helper-escape-valve.md);
 read it before adding another.
@@ -65,10 +71,10 @@ Pure function, no default export.
 
 ## Authoring a keyed guide (static-key auth)
 
-`boe.es` is the reference for **no-auth** guides. When the endpoint requires a
-key, start from a keyed reference recipe instead: `api.github.com`
-(optional header ref), `coingecko.com` (required header ref), or
-`etherscan.io` (required query `?key=` ref) cover the shapes.
+`boletin-oficial-del-estado` is the reference for **no-auth** guides. When the endpoint requires a
+key, start from a keyed reference recipe instead: `github`
+(optional header ref), `coingecko` (required header ref), or
+`etherscan` (required query `?key=` ref) cover the shapes.
 
 The guide **declares the secret by name**; the value never lives in the guide.
 `api-fetch` reads the value from the per-domain secrets store
@@ -90,7 +96,7 @@ auth:
 **Rule of thumb:** the store holds the **raw credential**; the guide declares
 how it is presented. For scheme-prefixed headers (`Authorization: Bearer …`)
 declare `headerPrefixes` so provisioning pastes the raw token — never smuggle
-the `Bearer ` prefix into the stored value.
+the `Bearer` prefix into the stored value.
 
 **Parser-enforced** (every failure carries a `fix:` hint — a bad guide fails
 at parse time, not fetch time):
@@ -104,7 +110,7 @@ at parse time, not fetch time):
   map is an error — the agent must not be able to set a code-injected param.
 - `auth.kind: oauth2` is rejected at parse ("not yet implemented").
 
-**Keyed-guide tests** follow the `api.github.com/endpoint-coverage.test.ts`
+**Keyed-guide tests** follow the `github/endpoint-coverage.test.ts`
 pattern: parse/recipe assertions run always; live calls resolve the key via
 `resolveSecretHeaders` / `resolveSecretQueryParams` from `core/auth.js` and
 are `HOST_INTEGRATION=1`-gated. Framework structural tests inject a temp store
@@ -117,11 +123,11 @@ redaction on every surfaced channel).
 
 ## Test harness: shared plumbing, per-file assertions
 
-The `boe.es` recipe-setup pattern is reusable verbatim. Import the
+The `boletin-oficial-del-estado` recipe-setup pattern is reusable verbatim. Import the
 temp-dir plumbing from
 [`_shared/test-harness.ts`](./_shared/test-harness.ts):
 
-- **`withTempDirs(domain, fn)`** — copies a guide folder into a temp dir
+- **`withTempDirs(dirName, fn)`** — copies a guide folder (by `slug(shortName)` dir name) into a temp dir
   and runs the real `apiFetch` pipeline against it. Byte-for-byte
   identical across every guide; never touches any API.
 - **`createFetchOp(domain)`** — the generic `fetchOp` bootstrap: load the
@@ -148,7 +154,7 @@ coupling.
 
 A new guide imports `withTempDirs`, `createFetchOp`, and `itWhen` from
 `../_shared/test-harness.js`, then swaps the domain + per-op assertions.
-See `boe.es/endpoint-coverage.test.ts` for the reference shape.
+See `boletin-oficial-del-estado/endpoint-coverage.test.ts` for the reference shape.
 
 ## Reading the docs when authoring a guide
 

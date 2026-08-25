@@ -10,7 +10,7 @@ guide is a versioned YAML recipe consumed by the `pi-lean-host` framework.
   `it.skip`-gated live tests, which skip without `HOST_INTEGRATION=1`).
 - `npm run test:ci` — same but excludes `**/endpoint-coverage.test.ts`
   (the live-only files). Use this for a fast, deterministic, no-network run.
-- Run one file: `npx vitest run api-guides/boe.es/helper.test.ts`
+- Run one file: `npx vitest run api-guides/boletin-oficial-del-estado/helper.test.ts`
 - Run a single test by name: `npx vitest run -t "parses cleanly"`
 - Live (nightly) tier: `npm run test:integration` — runs `scripts/test-integration.sh`
   (the real network calls) and **persists a timestamped full log to
@@ -18,7 +18,7 @@ guide is a versioned YAML recipe consumed by the `pi-lean-host` framework.
   Use the script, not a bare `HOST_INTEGRATION=1 npx vitest run` — the bare
   invocation burns upstream calls and leaves no trace, so you can't read the
   last run from disk. Pass extra args through after the script name
-  (`npm run test:integration -- api-guides/boe.es/endpoint-coverage.test.ts`).
+  (`npm run test:integration -- api-guides/boletin-oficial-del-estado/endpoint-coverage.test.ts`).
   Red is a **drift signal**, not a gate. Prefer reading the latest
   `integration-results/*.log` over re-running.
 - Probe one op against the live endpoint without writing a test:
@@ -69,7 +69,7 @@ registration — drop a co-located `*.test.ts` and it runs.
 ## Layout
 
 ```
-api-guides/<domain>/
+api-guides/<slug(shortName)>/
 ├── guide.md                       ← recipe YAML (the source of truth)
 ├── helper.ts                      ← optional; param or response transform
 ├── helper.test.ts / transform.test.ts  ← present iff helper.ts exists
@@ -90,19 +90,23 @@ from there. Keep per-file: any `fetchOp` wrapper that adds pacing / 503-retry
 
 ## Authoring a guide (read CONTRIBUTING.md first)
 
-- **No-auth reference template:** `boe.es` — copy its pattern.
-- **Keyed (`auth.kind: static-key`) templates:** `api.github.com` (optional
-  header), `coingecko.com` (required header), `etherscan.io` (required
+- **No-auth reference template:** `boletin-oficial-del-estado` — copy its pattern.
+- **Keyed (`auth.kind: static-key`) templates:** `github` (optional
+  header), `coingecko` (required header), `etherscan` (required
   `?key=` query).
+- **Folder identity (0.4.0):** each guide lives in `api-guides/<slug(shortName)>/`
+  — the folder name must equal `slug(shortName)` (lowercase, non-alphanumeric
+  runs replaced by `-`). A divergent folder routes the guide to malformed and
+  it never loads; `api-learn` save derives the folder from `shortName` itself.
 - **Default to no `helper.ts`.** Express the shape via the recipe surface
   (`paginate`, `passthrough`, `itemsPath`, `accept`, `parse`, `dateParams`)
   first. Add `helper.ts` only when a transform the recipe can't carry is
   genuinely needed (positional-array zip, fat `properties` projection,
-  structural reshape). Current helpers: `boe.es`, `earthquake.usgs.gov`,
-  `en.wikipedia.org-action`, `web.archive.org`.
+  structural reshape). Current helpers: `boletin-oficial-del-estado`, `usgs-earthquake`,
+  `wikimedia-action`, `wayback-cdx-server`.
 - Two helper modes, both in `helper.ts`:
   - `helper: true` on an op → param transform `(params, ctx) => params`
-    (e.g. `boe.es` `fecha` ISO→YYYYMMDD; `from`/`to` use core `dateParams`
+    (e.g. `boletin-oficial-del-estado` `fecha` ISO→YYYYMMDD; `from`/`to` use core `dateParams`
     instead — don't reimplement those).
   - `transform: true` on an op → response transform `(data, ctx) => unknown`,
     loaded by `loadTransform`, invoked at the `restGet` (whole-body) or

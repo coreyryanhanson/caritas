@@ -129,7 +129,7 @@ export function createFetchOp(
 
 /**
  * Wrap a test body in temp-dir setup/teardown. Pass the domains to copy in.
- * Returns a zero-arg async fn suitable for `it(..., harness("boe.es")(async ({ guidesDir }) => { ... }))`.
+ * Returns a zero-arg async fn suitable for `it(..., harness("boletin-oficial-del-estado")(async ({ guidesDir }) => { ... }))`.
  *
  * No-op (returns immediately) when `HOST_INTEGRATION !== "1"`, so bare CI
  * skips the live path without touching the filesystem.

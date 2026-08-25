@@ -50,7 +50,7 @@ When a recipe breaks, you have two paths, both first-class:
 ## What's in here
 
 ```text
-api-guides/<domain>/
+api-guides/<slug(shortName)>/
 ├── guide.md                       ← the recipe YAML (source of truth)
 ├── helper.ts                      ← optional; a transform the recipe can't express
 ├── endpoint-coverage.test.ts      ← live coverage; runs under HOST_INTEGRATION=1
@@ -59,25 +59,27 @@ api-guides/<domain>/
 └── spec/                          ← optional cached docs (local dev only, gitignored)
 ```
 
-Each `<domain>/` folder is self-contained and inert until you copy it into
+Each `<slug(shortName)>/` folder is self-contained and inert until you copy it into
 your own pi-lean-host guides directory. Nothing in this repo auto-executes.
 
 ### Domains covered
 
 ```text
-api.gbif.org             api.github.com           archive.org              archive.org-wayback
-arxiv.org                boe.es                   coingecko.com            data-api.ecb.europa.eu
-datos.gob.es             earthquake.usgs.gov      en.wikipedia.org         en.wikipedia.org-action
-etherscan.io             eutils.ncbi.nlm.nih.gov  gitlab.com               loc.gov
-musicbrainz.org          openlibrary.org          resources.data.gov       services.dnb.de
-web.archive.org          www.federalregister.gov  www.wikidata.org
+gbif                          github                        internet-archive              wayback-availability
+arxiv                         boletin-oficial-del-estado    coingecko                     ecb-data-portal
+datos-gob-es                  usgs-earthquake               wikipedia-rest                wikimedia-action
+etherscan                     pubmed-e-utilities            gitlab                        library-of-congress
+musicbrainz                   open-library                  data-gov                      deutsche-nationalbibliothek
+wayback-cdx-server            federal-register              wikidata
 ```
 
-The spread covers both **no-auth** APIs and **keyed** APIs
-(`auth.kind: static-key`) — the latter exercising header refs, query refs
-(`?key=`), and the required/optional split. `boe.es` is the reference
-template for no-auth guides; `api.github.com`, `coingecko.com`, and
-`etherscan.io` are the keyed references.
+Each folder is named `slug(shortName)` — the guide's `shortName` lowercased
+with non-alphanumeric runs replaced by `-` (pi-lean-host 0.4.0 identity rule;
+a divergent folder routes the guide to malformed). The spread covers both
+**no-auth** APIs and **keyed** APIs (`auth.kind: static-key`) — the latter
+exercising header refs, query refs (`?key=`), and the required/optional
+split. `boletin-oficial-del-estado` is the reference template for no-auth guides; `github`,
+`coingecko`, and `etherscan` are the keyed references.
 
 ---
 
@@ -91,8 +93,8 @@ a clone of this repo:
 git clone https://github.com/coreyryanhanson/caritas.git /tmp/caritas
 cp -r /tmp/caritas/api-guides/* ~/.pi/agent/pi-lean-host/api-guides/
 
-# or grab a single domain
-cp -r /tmp/caritas/api-guides/en.wikipedia.org ~/.pi/agent/pi-lean-host/api-guides/
+# or grab a single guide (folder must stay named slug(shortName))
+cp -r /tmp/caritas/api-guides/wikipedia-rest ~/.pi/agent/pi-lean-host/api-guides/
 ```
 
 Only then does the recipe load and execute. For keyed recipes, the API key
@@ -110,8 +112,8 @@ that drifted.
 ## For contributors
 
 This is a **devDep-only source repo — never published to npm.** Its own test
-tooling is the consumer: `pi-lean-host` is installed from npm as a pinned
-version in `devDependencies`.
+tooling is the consumer: `pi-lean-host` is installed as a `file:` link to
+the local checkout in `devDependencies`.
 
 Before adding a guide, read [`api-guides/CONTRIBUTING.md`](api-guides/CONTRIBUTING.md)
 — it covers the recipe shape, when to reach for a `helper.ts`, and the
@@ -140,14 +142,14 @@ construction — no extra skip logic needed.
 npm test                       # full suite (live tests skip without HOST_INTEGRATION=1)
 npm run test:ci                # fast, deterministic, no network
 HOST_INTEGRATION=1 npm test    # live tier — real network calls
-npx vitest run api-guides/boe.es/helper.test.ts   # one file
+npx vitest run api-guides/boletin-oficial-del-estado/helper.test.ts   # one file
 ```
 
-### Pinned npm devDep
+### Local devDep
 
-`pi-lean-host` is installed as a pinned version in `devDependencies`.
+pi-lean-host` is installed as a pinned version in `devDependencies`.
 Bumping it is a deliberate, reviewed PR — a host schema change should be a
-visible event here, not a silent break.
+visible event here, not a silent break
 
 ### Pre-commit hooks
 
@@ -166,7 +168,7 @@ it (the CI gate still applies on push).
 | Thing | Where it lives | Who maintains | Published? |
 | ----- | -------------- | ------------- | ---------- |
 | Framework (`api-fetch`, `api-learn`, `api-probe`, recipe parser) | [pi-lean-host](https://github.com/coreyryanhanson/pi-lean-dimension/tree/main/packages/pi-lean-host) | maintainers | npm |
-| **Recipe library** (this repo) | `caritas` (`api-guides/<domain>/`) | maintainers + contributors | no — copy what you need |
+| **Recipe library** (this repo) | `caritas` (`api-guides/<slug(shortName)>/`) | maintainers + contributors | no — copy what you need |
 | Synthetic axis fixtures | pi-lean-host's own `api-guides/` | maintainers | bundled, framework-internal |
 
 caritas is the catalog of real, verified recipes. pi-lean-host itself ships
