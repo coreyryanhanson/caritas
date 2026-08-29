@@ -1,6 +1,6 @@
 ---
 kind: api
-schemaVersion: 0
+schemaVersion: 1
 domains:
   - ncbi.nlm.nih.gov
 shortName: PubMed E-utilities
@@ -9,9 +9,9 @@ apiHost: https://eutils.ncbi.nlm.nih.gov/entrez/eutils
 auth:
   kind: static-key
   secretQueryRefs:
-    api_key: api_key
-  optional:
-    - api_key
+    api_key:
+      secret: api_key
+      optional: true
 responseShape:
   format: xml
   charset: utf-8

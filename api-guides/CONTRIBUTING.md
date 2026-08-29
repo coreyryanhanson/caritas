@@ -86,29 +86,30 @@ would be one `cat` from the agent's context.
 auth:
   kind: static-key
   secretRefs:                  # or secretQueryRefs: for ?key= style
-    x-cg-demo-api-key: api_key # headerName: secretName
-  # headerPrefixes:            # headerName → prefix added for scheme-style
-  #   Authorization: "Bearer "  #   headers (e.g. GitHub/GitLab) — the store
-  #                             #   holds the RAW token; the guide adds the prefix
-  requires: [api_key]          # ─ or optional if the API works unauthenticated
+    x-cg-demo-api-key:         # headerName → self-contained ref
+      secret: api_key          #   (store name; availability + prefix live HERE)
+  # Authorization:             # scheme-style header (e.g. GitHub/GitLab):
+  #   secret: api_key          #   the store holds the RAW token; the ref's
+  #   prefix: "Bearer "        #   prefix adds the scheme at resolution time
+  #   optional: true           # default: required (fail-closed when absent)
 ```
 
-**Rule of thumb:** the store holds the **raw credential**; the guide declares
+**Rule of thumb:** the store holds the **raw credential**; the ref declares
 how it is presented. For scheme-prefixed headers (`Authorization: Bearer …`)
-declare `headerPrefixes` so provisioning pastes the raw token — never smuggle
-the `Bearer` prefix into the stored value.
+declare `prefix: "Bearer "` on the ref so provisioning pastes the raw token —
+never smuggle the `Bearer` prefix into the stored value.
 
 **Parser-enforced** (every failure carries a `fix:` hint — a bad guide fails
 at parse time, not fetch time):
 
 - `secretRefs` / `secretQueryRefs` are rejected on `auth.kind: none`.
-- Every ref name must be declared in `requires` ∪ `optional`; a name in
-  **both** is an error.
-- Each `headerPrefixes` key must also be a `secretRefs` header; empty prefix
-  strings and `headerPrefixes` on `auth.kind: none` are rejected.
+- Each ref is self-contained (`{ secret, prefix?, optional? }`): absent
+  `optional` means required and fails closed when the secret is missing.
 - A `secretQueryRefs` param name that also appears in any operation's `params`
   map is an error — the agent must not be able to set a code-injected param.
-- `auth.kind: oauth2` is rejected at parse ("not yet implemented").
+- `auth.kind: oauth2` is supported (v1 schema — `client_credentials` and
+  `authorization_code` grants, per-variant field allowlists; see
+  `oauth2-flow-plan.md` in the host repo for the frozen shape).
 
 **Keyed-guide tests** follow the `github/endpoint-coverage.test.ts`
 pattern: parse/recipe assertions run always; live calls resolve the key via
@@ -116,8 +117,9 @@ pattern: parse/recipe assertions run always; live calls resolve the key via
 are `HOST_INTEGRATION=1`-gated. Framework structural tests inject a temp store
 via `setSecretsDir` (`__tests__/auth.test.ts`) — use that seam for a keyed
 guide's pure assertions and assert the output-channel invariants too: a
-missing `requires` secret fails closed **before** the request, a missing
-`optional` proceeds unauthenticated, and no secret value ever appears in
+missing required ref (no `optional: true`) fails closed **before** the
+request, a missing `optional` ref proceeds unauthenticated, and no secret
+value ever appears in
 `result.url`, `details.params`, the 401 body, or `details.headers` (names +
 redaction on every surfaced channel).
 

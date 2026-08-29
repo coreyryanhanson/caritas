@@ -1,6 +1,6 @@
 ---
 kind: api
-schemaVersion: 0
+schemaVersion: 1
 organization: archive.org
 description: Item metadata records and full-corpus Solr search on archive.org.
 domains:

@@ -1,6 +1,6 @@
 ---
 kind: api
-schemaVersion: 0
+schemaVersion: 1
 domains:
   - etherscan.io
 shortName: Etherscan
@@ -11,9 +11,8 @@ apiHost: https://api.etherscan.io/v2/api
 auth:
   kind: static-key
   secretQueryRefs:
-    apikey: api_key
-  requires:
-    - api_key
+    apikey:
+      secret: api_key
 responseShape:
   format: json
   charset: utf-8

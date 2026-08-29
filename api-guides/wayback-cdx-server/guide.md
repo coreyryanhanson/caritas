@@ -1,6 +1,6 @@
 ---
 kind: api
-schemaVersion: 0
+schemaVersion: 1
 organization: archive.org
 description: "Wayback capture history: CDX index queries and Memento time-travel lookups."
 domains:

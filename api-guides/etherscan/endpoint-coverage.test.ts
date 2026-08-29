@@ -105,8 +105,9 @@ describe("Etherscan recipe", () => {
 		const guide = result.guide;
 		expect(guide.apiHost).toBe("https://api.etherscan.io/v2/api");
 		expect(guide.auth.kind).toBe("static-key");
-		expect(guide.auth.secretQueryRefs).toEqual({ apikey: "api_key" });
-		expect(guide.auth.requires).toContain("api_key");
+		expect(guide.auth.secretQueryRefs).toEqual({
+			apikey: { secret: "api_key" },
+		});
 		// The secret param must never be agent-suppliable — no op may declare it.
 		for (const op of guide.operations) {
 			expect(op.params["apikey"]).toBeUndefined();

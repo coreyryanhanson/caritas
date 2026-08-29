@@ -1,6 +1,6 @@
 ---
 kind: api
-schemaVersion: 0
+schemaVersion: 1
 organization: wikimedia.org
 description: Page summaries, HTML, and revision metadata via the Wikimedia REST surface.
 domains:

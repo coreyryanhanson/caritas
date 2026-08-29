@@ -50,8 +50,9 @@ describe("PubMed E-utilities live integration smoke", () => {
 				"https://eutils.ncbi.nlm.nih.gov/entrez/eutils",
 			);
 			expect(guide.auth.kind).toBe("static-key");
-			expect(guide.auth.secretQueryRefs).toEqual({ api_key: "api_key" });
-			expect(guide.auth.optional).toEqual(["api_key"]);
+			expect(guide.auth.secretQueryRefs).toEqual({
+				api_key: { secret: "api_key", optional: true },
+			});
 			expect(guide.operations.length).toBe(8);
 		}),
 	);

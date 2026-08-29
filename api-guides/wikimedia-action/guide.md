@@ -1,6 +1,6 @@
 ---
 kind: api
-schemaVersion: 0
+schemaVersion: 1
 organization: wikimedia.org
 description: Wiki data, catalog lists, and site metadata via the MediaWiki action=query surface.
 domains:

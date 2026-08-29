@@ -1,6 +1,6 @@
 ---
 kind: api
-schemaVersion: 0
+schemaVersion: 1
 domains:
   - coingecko.com
 shortName: CoinGecko
@@ -11,9 +11,8 @@ apiHost: https://api.coingecko.com/api/v3
 auth:
   kind: static-key
   secretRefs:
-    x-cg-demo-api-key: api_key
-  requires:
-    - api_key
+    x-cg-demo-api-key:
+      secret: api_key
 responseShape:
   format: json
   charset: utf-8

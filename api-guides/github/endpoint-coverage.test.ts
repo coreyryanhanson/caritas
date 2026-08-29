@@ -8,11 +8,11 @@
  * Skipped in bare CI — opt in via HOST_INTEGRATION=1.
  * Co-located with the guide it tests.
  *
- * The guide is `auth.optional`; the suite runs AUTHENTICATED (the stored PAT
+ * The suite runs AUTHENTICATED (the stored PAT
  * is injected on every op) so it lands on the 5000/hr quota, not the 60/hr
  * anonymous one — the full 58-request file runs in one pass. Requires a
  * provisioned PAT at `/api secrets github.com` (raw token; the guide's
- * `headerPrefixes` adds the `Bearer ` scheme).
+ * `secretRefs` entry carries `prefix: "Bearer "`).
  */
 
 import { describe, expect } from "vitest";
@@ -22,7 +22,7 @@ const DIR = "github";
 const DOMAIN = "github.com";
 
 // ── Per-recipe fetch helper ──
-// This is a single auth.optional guide, so the live tests authenticate like
+// This is a single optional-secret guide, so the live tests authenticate like
 // CoinGecko/Etherscan: the stored PAT is injected on every op (real api-fetch
 // behavior, and it keeps the suite off the 60/hr unauth quota).
 
@@ -131,9 +131,9 @@ describe("GitHub live integration smoke", () => {
 			const guide = loaded.guides["github"]!;
 			expect(guide.apiHost).toBe("https://api.github.com");
 			expect(guide.auth.kind).toBe("static-key");
-			expect(guide.auth.secretRefs).toEqual({ Authorization: "api_key" });
-			expect(guide.auth.optional).toEqual(["api_key"]);
-			expect(guide.auth.requires).toBeUndefined();
+			expect(guide.auth.secretRefs).toEqual({
+				Authorization: { secret: "api_key", prefix: "Bearer ", optional: true },
+			});
 			// The secret header must never be agent-suppliable.
 			for (const op of guide.operations) {
 				expect(op.params["Authorization"]).toBeUndefined();

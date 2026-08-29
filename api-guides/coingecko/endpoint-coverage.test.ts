@@ -342,8 +342,9 @@ describe("CoinGecko live integration (authenticated)", () => {
 			const guide = loaded.guides[DIR]!;
 			expect(guide.apiHost).toBe("https://api.coingecko.com/api/v3");
 			expect(guide.auth.kind).toBe("static-key");
-			expect(guide.auth.secretRefs).toEqual({ "x-cg-demo-api-key": "api_key" });
-			expect(guide.auth.requires).toContain("api_key");
+			expect(guide.auth.secretRefs).toEqual({
+				"x-cg-demo-api-key": { secret: "api_key" },
+			});
 		}),
 	);
 
