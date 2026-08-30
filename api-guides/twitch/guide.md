@@ -344,9 +344,11 @@ operations:
   broadcasters who have no broadcast schedule — that is the API's "empty"
   signal, not an auth failure.
 - Excluded (require a *user* access token with scopes, not obtainable via
-  client_credentials): followed streams/channels, followers, markers,
-  moderation/*, polls, predictions, goals, hype trains, charity, chat
-  settings/chatters, subscriptions, analytics, bits leaderboard, ads.
+  client_credentials): the user-scope reads now live in the sibling
+  `twitch-user` guide (same `twitch.tv` domain claim, separate
+  authorization_code token slot); the rest of the user-only surface
+  (moderation/*, chat settings, analytics, ads, ...) stays out pending a
+  wider-scope re-consent.
 - Excluded (dead or gated): `GET /helix/streams/tags` + `GET /helix/tags/streams`
   are deprecated (HTTP 410); `GET /helix/clips/downloads` needs editor
   authorization; `GET /helix/entitlements/drops` returns entitlements only for
