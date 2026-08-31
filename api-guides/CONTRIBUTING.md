@@ -5,6 +5,12 @@
 > for no-auth guides — read it first, then copy its pattern. For a **keyed**
 > guide (`auth.kind: static-key`), start from a keyed recipe instead — see
 > [Authoring a keyed guide](#authoring-a-keyed-guide-static-key-auth).
+>
+> The guide **schema itself** — every frontmatter field, pagination style,
+> response shape, auth shape, and helper contract — is documented once in
+> pi-lean-host's [docs/authoring.md](https://github.com/coreyryanhanson/pi-lean-dimension/blob/main/packages/pi-lean-host/docs/authoring.md).
+> This file covers what contributing to the *library* adds on top: directory
+> layout, tests, and provenance. Don't duplicate schema detail here.
 
 ## Directory layout
 
@@ -63,11 +69,10 @@ recipe surface couldn't. The decision criteria live in
   [`api-helper-escape-valve.md`](https://github.com/coreyryanhanson/pi-lean-dimension/blob/main/packages/pi-lean-host/docs/design/api-helper-escape-valve.md);
 read it before adding another.
 
-Transform contract: `(data, ctx) => unknown`, declared via `transform: true`
-on the op in `guide.md`. Loaded by `loadTransform`, invoked by the
-`restGet` (whole-body) or `paginate` (per-item) hookpoint. A throw falls
-back to the raw body/item with a warning — graceful, never disables the op.
-Pure function, no default export.
+The `transform` contract (`(data, ctx) => unknown`, declared via
+`transform: true` on the op in `guide.md`, graceful throw → raw data with a
+warning, pure function, no default export) is specified in
+[docs/authoring.md](https://github.com/coreyryanhanson/pi-lean-dimension/blob/main/packages/pi-lean-host/docs/authoring.md#local-user-helpers).
 
 ## Authoring a keyed guide (static-key auth)
 
@@ -82,34 +87,12 @@ The guide **declares the secret by name**; the value never lives in the guide.
 `/api secrets`) and injects it in code — a real key committed to the recipe
 would be one `cat` from the agent's context.
 
-```yaml
-auth:
-  kind: static-key
-  secretRefs:                  # or secretQueryRefs: for ?key= style
-    x-cg-demo-api-key:         # headerName → self-contained ref
-      secret: api_key          #   (store name; availability + prefix live HERE)
-  # Authorization:             # scheme-style header (e.g. GitHub/GitLab):
-  #   secret: api_key          #   the store holds the RAW token; the ref's
-  #   prefix: "Bearer "        #   prefix adds the scheme at resolution time
-  #   optional: true           # default: required (fail-closed when absent)
-```
-
-**Rule of thumb:** the store holds the **raw credential**; the ref declares
-how it is presented. For scheme-prefixed headers (`Authorization: Bearer …`)
-declare `prefix: "Bearer "` on the ref so provisioning pastes the raw token —
-never smuggle the `Bearer` prefix into the stored value.
-
-**Parser-enforced** (every failure carries a `fix:` hint — a bad guide fails
-at parse time, not fetch time):
-
-- `secretRefs` / `secretQueryRefs` are rejected on `auth.kind: none`.
-- Each ref is self-contained (`{ secret, prefix?, optional? }`): absent
-  `optional` means required and fails closed when the secret is missing.
-- A `secretQueryRefs` param name that also appears in any operation's `params`
-  map is an error — the agent must not be able to set a code-injected param.
-- `auth.kind: oauth2` is supported (v1 schema — `client_credentials` and
-  `authorization_code` grants, per-variant field allowlists; see
-  `oauth2-flow-plan.md` in the host repo for the frozen shape).
+The full guide-side YAML (`secretRefs` / `secretQueryRefs`, `prefix`,
+`optional`) and the parser-enforced invariants (fail-closed required refs,
+query-ref/params collisions, per-grant `oauth2` field rules) live in
+[docs/authoring.md](https://github.com/coreyryanhanson/pi-lean-dimension/blob/main/packages/pi-lean-host/docs/authoring.md#static-key-auth-in-the-guide) —
+that is the canonical schema reference; keep it that way rather than
+re-copying YAML here.
 
 **Keyed-guide tests** follow the `github/endpoint-coverage.test.ts`
 pattern: parse/recipe assertions run always; live calls resolve the key via
