@@ -37,7 +37,6 @@ operations:
       cursorPath: pagination.cursor
       cursorParam: after
       pageSizeParam: first
-      pageSize: 20
     params:
       first:
         description: Maximum number of items per page (1–100).
@@ -65,7 +64,6 @@ operations:
       cursorPath: pagination.cursor
       cursorParam: after
       pageSizeParam: first
-      pageSize: 20
     params:
       query:
         description: Search string (URI-encoding handled by the executor).
@@ -84,7 +82,6 @@ operations:
       cursorPath: pagination.cursor
       cursorParam: after
       pageSizeParam: first
-      pageSize: 20
     params:
       query:
         description: Search string (matches login, display name, description).
@@ -105,7 +102,6 @@ operations:
       cursorPath: pagination.cursor
       cursorParam: after
       pageSizeParam: first
-      pageSize: 20
     params:
       user_id:
         description: Filter by broadcaster user ID (up to 100, repeatable).
@@ -152,7 +148,6 @@ operations:
       cursorPath: pagination.cursor
       cursorParam: after
       pageSizeParam: first
-      pageSize: 20
     params:
       broadcaster_id:
         description: Clips captured from this broadcaster's streams.
@@ -184,7 +179,6 @@ operations:
       cursorPath: pagination.cursor
       cursorParam: after
       pageSizeParam: first
-      pageSize: 20
     params:
       id:
         description: Specific video IDs (up to 100, repeatable).
@@ -214,7 +208,6 @@ operations:
       cursorPath: pagination.cursor
       cursorParam: after
       pageSizeParam: first
-      pageSize: 20
     params:
       broadcaster_id:
         description: Broadcaster whose schedule to read.
@@ -309,7 +302,6 @@ operations:
       cursorPath: pagination.cursor
       cursorParam: after
       pageSizeParam: first
-      pageSize: 20
       totalCountPath: total
     params:
       status:

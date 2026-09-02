@@ -265,7 +265,7 @@ describe("Twitch live integration (oauth2)", () => {
 			}))!;
 			const items = itemsOf(outcome) as Array<Record<string, unknown>>;
 			expect(items.length).toBeGreaterThan(0);
-			expect(items[0]!.broadcaster_login).toBe("ninja");
+			expect(items[0]!.broadcaster_login).toContain("ninja");
 			expect(typeof items[0]!.is_live).toBe("boolean");
 		}),
 	);

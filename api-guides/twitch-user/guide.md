@@ -63,7 +63,6 @@ operations:
       cursorPath: pagination.cursor
       cursorParam: after
       pageSizeParam: first
-      pageSize: 20
     params:
       user_id:
         description: User whose followed live streams to list (must match the access token's user).
@@ -82,7 +81,6 @@ operations:
       cursorPath: pagination.cursor
       cursorParam: after
       pageSizeParam: first
-      pageSize: 20
       totalCountPath: total
     params:
       broadcaster_id:
@@ -106,7 +104,6 @@ operations:
       cursorPath: pagination.cursor
       cursorParam: after
       pageSizeParam: first
-      pageSize: 20
     params:
       user_id:
         description: Markers from this user's most recent VOD (mutually exclusive with video_id; must match the token's user or be an editor).
@@ -144,7 +141,6 @@ operations:
       cursorPath: pagination.cursor
       cursorParam: after
       pageSizeParam: first
-      pageSize: 20
       totalCountPath: total
     params:
       broadcaster_id:
@@ -168,7 +164,6 @@ operations:
       cursorPath: pagination.cursor
       cursorParam: after
       pageSizeParam: first
-      pageSize: 20
       totalCountPath: total
     params:
       broadcaster_id:
