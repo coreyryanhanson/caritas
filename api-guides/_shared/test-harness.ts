@@ -129,22 +129,32 @@ export function createFetchOp(
 
 /**
  * Wrap a test body in temp-dir setup/teardown. Pass the domains to copy in.
- * Returns a zero-arg async fn suitable for `it(..., harness("boletin-oficial-del-estado")(async ({ guidesDir }) => { ... }))`.
+ * Returns a fn suitable for `it(..., harness("boletin-oficial-del-estado")(async ({ guidesDir }) => { ... }))`.
+ * Vitest's test context (e.g. for `ctx.skip()` inside chain tests) is
+ * forwarded as the second argument when the harness runs the body.
  *
  * No-op (returns immediately) when `HOST_INTEGRATION !== "1"`, so bare CI
  * skips the live path without touching the filesystem.
  */
 export function withTempDirs(
 	...domainsToCopy: string[]
-): (fn: (dirs: TempDirs) => Promise<void>) => () => Promise<void> {
+): (
+	fn: (
+		dirs: TempDirs,
+		ctx?: { skip: (note?: string) => void },
+	) => Promise<void>,
+) => (...args: unknown[]) => Promise<void> {
 	const HOST_INTEGRATION = process.env["HOST_INTEGRATION"] === "1";
-	return (fn: (dirs: TempDirs) => Promise<void>) => {
-		return async () => {
+	return (fn) => {
+		return async (...args: unknown[]) => {
 			if (!HOST_INTEGRATION) return;
 			const guidesDir = mkdtempSync(join(tmpdir(), "pi-host-smoke-guides-"));
 			try {
 				copyDomains(guidesDir, ...domainsToCopy);
-				await fn({ guidesDir });
+				await (fn as (...a: unknown[]) => Promise<void>)(
+					{ guidesDir },
+					...args,
+				);
 			} finally {
 				rmSync(guidesDir, { recursive: true, force: true });
 			}
