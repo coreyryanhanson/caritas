@@ -1,52 +1,58 @@
 /**
  * CoinGecko recipe validity tests — endpoint coverage + live fetch sanity.
  *
- * Verifies the authenticated header path end-to-end against the live API:
+ * Verifies the authenticated header path end-to-end against the live API
+ * through the canonical resolve-op pipeline (`createResolveOpFn`), which
  * resolves the `api_key` secret from the store, injects it as the
- * `x-cg-demo-api-key` header, and executes the keyed ops.
+ * `x-cg-demo-api-key` header, and executes the keyed ops. A missing key
+ * surfaces as `auth_required_not_provisioned` naming `api_key`.
  *
  * Skipped in bare CI — opt in via HOST_INTEGRATION=1. Requires a
  * provisioned demo key at `/api secrets coingecko.com`.
  */
 
+import type {
+	PaginateResult,
+	RestGetResult,
+} from "pi-lean-host/core/helpers.js";
 import { describe, expect, it } from "vitest";
-import { itWhen, withTempDirs } from "../_shared/test-harness.js";
+import {
+	createResolveOpFn,
+	itWhen,
+	withTempDirs,
+} from "../_shared/test-harness.js";
 
 const DOMAIN = "coingecko.com";
 const DIR = "coingecko";
 
 const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 
-/** Resolve the stored key-injected auth for a live restGet against the guide. */
-async function authFor(guidesDir: string) {
-	const { resolveSecretHeaders } = await import("pi-lean-host/core/auth.js");
-	const { setUserGuidesDir, findGuidesByDomain } = await import(
-		"pi-lean-host/core/guide-store.js"
-	);
-	setUserGuidesDir(guidesDir);
-	const { guide } = findGuidesByDomain(DOMAIN).find(({ guide }) =>
-		guide.operations.some((o) => o.name === "getSimplePrice"),
-	)!;
-	const res = resolveSecretHeaders(guide.auth, DOMAIN);
-	expect(res.absentRequired).toEqual([]);
-	expect(res.headers["x-cg-demo-api-key"]).toBeTruthy();
-	return {
-		guide,
-		authHeaders: res.headers,
-		secretHeaderNames: new Set(["x-cg-demo-api-key"]),
-		secretValues: Object.values(res.headers),
-	};
+function asRestGet(result: RestGetResult | unknown): RestGetResult {
+	return result as RestGetResult;
+}
+function asPaginate(result: PaginateResult | unknown): PaginateResult {
+	return result as PaginateResult;
 }
 
+/** The canonical resolve-op pipeline, pinned to this guide's domain. */
+const runResolveOp = createResolveOpFn(DOMAIN);
+
+/** Run one restGet op through the pipeline; throws on rejection/HTTP >= 400. */
 async function runRestGet(
 	guidesDir: string,
 	opName: string,
 	params: Record<string, unknown>,
-) {
-	const { restGet } = await import("pi-lean-host/core/helpers.js");
-	const { guide, ...auth } = await authFor(guidesDir);
-	const op = guide.operations.find((o) => o.name === opName)!;
-	return restGet(guide.apiHost, op, params, guide, auth);
+): Promise<RestGetResult> {
+	return asRestGet(await runResolveOp(guidesDir, opName, params));
+}
+
+/** Run one paginate op through the pipeline; throws on rejection/HTTP >= 400. */
+async function runPaginate(
+	guidesDir: string,
+	opName: string,
+	params: Record<string, unknown>,
+): Promise<PaginateResult> {
+	return asPaginate(await runResolveOp(guidesDir, opName, params));
 }
 
 describe("CoinGecko live integration (authenticated)", () => {
@@ -341,9 +347,13 @@ describe("CoinGecko live integration (authenticated)", () => {
 
 			const guide = loaded.guides[DIR]!;
 			expect(guide.apiHost).toBe("https://api.coingecko.com/api/v3");
-			expect(guide.auth.kind).toBe("static-key");
-			expect(guide.auth.secretRefs).toEqual({
-				"x-cg-demo-api-key": { secret: "api_key" },
+			// toMatchObject (not .kind + .secretRefs) — doesn't require narrowing
+			// the AuthConfig union to reach the static-key-only field.
+			expect(guide.auth).toMatchObject({
+				kind: "static-key",
+				secretRefs: {
+					"x-cg-demo-api-key": { secret: "api_key" },
+				},
 			});
 		}),
 	);
@@ -351,16 +361,9 @@ describe("CoinGecko live integration (authenticated)", () => {
 	itWhen(
 		"listMarkets fetches a page with the key injected from the store",
 		withTempDirs(DIR)(async ({ guidesDir }) => {
-			const { paginate } = await import("pi-lean-host/core/helpers.js");
-			const { guide, ...auth } = await authFor(guidesDir);
-			const op = guide.operations.find((o) => o.name === "listMarkets")!;
-			const result = await paginate(
-				guide.apiHost,
-				op,
-				{ vs_currency: "usd" },
-				guide,
-				auth,
-			);
+			const result = await runPaginate(guidesDir, "listMarkets", {
+				vs_currency: "usd",
+			});
 			expect(Array.isArray(result.items)).toBe(true);
 			expect(result.items.length).toBeGreaterThan(0);
 			const first = result.items[0] as Record<string, unknown>;
@@ -677,10 +680,7 @@ describe("CoinGecko live integration (authenticated)", () => {
 	itWhen(
 		"getExchanges fetches a page of exchanges with the key injected",
 		withTempDirs(DIR)(async ({ guidesDir }) => {
-			const { paginate } = await import("pi-lean-host/core/helpers.js");
-			const { guide, ...auth } = await authFor(guidesDir);
-			const op = guide.operations.find((o) => o.name === "getExchanges")!;
-			const result = await paginate(guide.apiHost, op, {}, guide, auth);
+			const result = await runPaginate(guidesDir, "getExchanges", {});
 			expect(Array.isArray(result.items)).toBe(true);
 			expect(result.items.length).toBeGreaterThan(0);
 			const first = result.items[0] as Record<string, unknown>;
@@ -763,12 +763,11 @@ describe("CoinGecko live integration (authenticated)", () => {
 	itWhen(
 		"getDerivativesExchanges fetches a page of derivatives exchanges",
 		withTempDirs(DIR)(async ({ guidesDir }) => {
-			const { paginate } = await import("pi-lean-host/core/helpers.js");
-			const { guide, ...auth } = await authFor(guidesDir);
-			const op = guide.operations.find(
-				(o) => o.name === "getDerivativesExchanges",
-			)!;
-			const result = await paginate(guide.apiHost, op, {}, guide, auth);
+			const result = await runPaginate(
+				guidesDir,
+				"getDerivativesExchanges",
+				{},
+			);
 			expect(Array.isArray(result.items)).toBe(true);
 			expect(result.items.length).toBeGreaterThan(0);
 			const first = result.items[0] as Record<string, unknown>;
@@ -794,10 +793,7 @@ describe("CoinGecko live integration (authenticated)", () => {
 	itWhen(
 		"getNftsList fetches a page of NFT collections",
 		withTempDirs(DIR)(async ({ guidesDir }) => {
-			const { paginate } = await import("pi-lean-host/core/helpers.js");
-			const { guide, ...auth } = await authFor(guidesDir);
-			const op = guide.operations.find((o) => o.name === "getNftsList")!;
-			const result = await paginate(guide.apiHost, op, {}, guide, auth);
+			const result = await runPaginate(guidesDir, "getNftsList", {});
 			expect(Array.isArray(result.items)).toBe(true);
 			expect(result.items.length).toBeGreaterThan(0);
 			const first = result.items[0] as Record<string, unknown>;
@@ -849,16 +845,10 @@ describe("CoinGecko live integration (authenticated)", () => {
 	itWhen(
 		"getTreasuryByCoin fetches treasury holdings by coin id",
 		withTempDirs(DIR)(async ({ guidesDir }) => {
-			const { paginate } = await import("pi-lean-host/core/helpers.js");
-			const { guide, ...auth } = await authFor(guidesDir);
-			const op = guide.operations.find((o) => o.name === "getTreasuryByCoin")!;
-			const result = await paginate(
-				guide.apiHost,
-				op,
-				{ entity: "companies", coin_id: "bitcoin" },
-				guide,
-				auth,
-			);
+			const result = await runPaginate(guidesDir, "getTreasuryByCoin", {
+				entity: "companies",
+				coin_id: "bitcoin",
+			});
 			expect(Array.isArray(result.items)).toBe(true);
 			expect(result.items.length).toBeGreaterThan(0);
 			const first = result.items[0] as Record<string, unknown>;

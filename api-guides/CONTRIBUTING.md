@@ -94,14 +94,20 @@ query-ref/params collisions, per-grant `oauth2` field rules) live in
 that is the canonical schema reference; keep it that way rather than
 re-copying YAML here.
 
-**Keyed-guide tests** follow the `github/endpoint-coverage.test.ts`
-pattern: parse/recipe assertions run always; live calls resolve the key via
-`resolveSecretHeaders` / `resolveSecretQueryParams` from `core/auth.js` and
-are `HOST_INTEGRATION=1`-gated. Framework structural tests inject a temp store
+**Keyed-guide tests** follow the
+`etherscan`/`coingecko`/`telegram-bot-api` `endpoint-coverage.test.ts`
+pattern: parse/recipe assertions run always; live calls ride the canonical
+resolve-op pipeline via `createResolveOpFn` from `../_shared/test-harness.js`
+(auth resolution, helper dispatch and transform wiring happen inside the
+pipeline — don't re-implement them per-file) and are
+`HOST_INTEGRATION=1`-gated. Hold the raw secret via a per-file `rawKey()`-style
+helper only for `not.toContain` negative assertions. Framework structural
+tests inject a temp store
 via `setSecretsDir` (`__tests__/auth.test.ts`) — use that seam for a keyed
 guide's pure assertions and assert the output-channel invariants too: a
 missing required ref (no `optional: true`) fails closed **before** the
-request, a missing `optional` ref proceeds unauthenticated, and no secret
+request (surfacing as `auth_required_not_provisioned` naming the secret), a
+missing `optional` ref proceeds unauthenticated, and no secret
 value ever appears in
 `result.url`, `details.params`, the 401 body, or `details.headers` (names +
 redaction on every surfaced channel).
@@ -129,10 +135,11 @@ coupling.
 **Keep per-file, do not share:**
 
 - A per-file `fetchOp` **wrapper** when a domain needs pacing, 503-retry,
-  auth overlay, or similar (e.g. `openlibrary.org` 400ms pacing,
+  or similar (e.g. `openlibrary.org` 400ms pacing,
   `musicbrainz.org`/`api.gbif.org` 503-retry). Compose it around
   `createFetchOp`. The wrapper encodes domain-specific shape and cannot
-  be shared.
+  be shared. Auth resolution is shared, not per-file: keyed guides run
+  live ops through `createResolveOpFn`.
 - The per-op assertions. These encode domain-specific response shape
   (`restGet` vs `paginate`, `itemsPath`, rate limits) and cannot be
   shared.

@@ -6,9 +6,15 @@
  * This is the part that is byte-for-byte identical across every guide's
  * tests; it never touches any API.
  *
+ * Layer 1.5 — the keyed-guide resolve-op seam: `createResolveOpFn` runs one
+ * op through the canonical `resolveOpForExecution` pipeline (the exact path
+ * api-fetch and /api verify ride), so keyed guides' live tests stop
+ * re-implementing the auth-resolution sequence per-file.
+ *
  * Layer 2 — the `fetchOp` wrapper + per-op assertions — stays per-file. The
- * wrapper encodes domain-specific shape (delay, 503-retry, auth overlay) and
- * cannot be shared. But the bare bootstrap (load recipe, dispatch on `via`) is
+ * wrapper encodes domain-specific shape (delay, 503-retry) and
+ * cannot be shared. Auth resolution is not per-file: keyed guides ride the
+ * `createResolveOpFn` pipeline above. But the bare bootstrap (load recipe, dispatch on `via`) is
  * generic and lives here as `createFetchOp`; per-file wrappers compose around it.
  *
  * Not under `core/`: this is peer test plumbing, not framework code. A guide
@@ -124,6 +130,57 @@ export function createFetchOp(
 					passTransform,
 					match.dirName,
 				);
+	};
+}
+
+/**
+ * Run one op through the canonical resolve-op pipeline (the exact path
+ * api-fetch and /api verify ride): load the guide by domain, resolve the op
+ * by name across all matches, execute — auth resolution, helper dispatch and
+ * transform wiring all happen inside the pipeline, so per-guide copies of
+ * that sequence go away. Throws on every failure mode — pipeline rejection
+ * (helper_disabled / auth_required_not_provisioned / oauth_token_missing)
+ * and executor throw (HTTP >= 400 HelperError) alike — so the live tier's
+ * happy path stays single-expression. Callers wanting the failure envelope
+ * catch around this helper.
+ */
+export function createResolveOpFn(
+	domain: string,
+): (
+	guidesDir: string,
+	name: string,
+	params?: Record<string, unknown>,
+) => Promise<unknown> {
+	return async (guidesDir, name, params = {}) => {
+		const { setUserGuidesDir, findGuidesByDomain } = await import(
+			"pi-lean-host/core/guide-store.js"
+		);
+		const { resolveOpForExecution } = await import(
+			"pi-lean-host/core/resolve-op.js"
+		);
+		setUserGuidesDir(guidesDir);
+		// Resolve like the real api-fetch tool: every guide claiming `domain`,
+		// then the op by name across all matches (multi-recipe safe). Explicit
+		// throw instead of `!` so a typo'd op name reads as a message, not a
+		// context-free undefined deref.
+		const match = findGuidesByDomain(domain).find(({ guide }) =>
+			guide.operations.some((o) => o.name === name),
+		);
+		if (!match) throw new Error(`op ${name} not found for ${domain}`);
+		const op = match.guide.operations.find((o) => o.name === name)!;
+		const res = await resolveOpForExecution(match.guide, op, match.dirName, {
+			userParams: params,
+		});
+		if (!res.ok) {
+			// The structured failure payload: which secrets the store lacks for
+			// auth_required_not_provisioned, the human-readable nudge otherwise.
+			const detail =
+				res.reason === "auth_required_not_provisioned"
+					? res.missing.join(", ")
+					: res.message;
+			throw new Error(`${name}: pipeline rejected — ${res.reason}: ${detail}`);
+		}
+		return res.result;
 	};
 }
 

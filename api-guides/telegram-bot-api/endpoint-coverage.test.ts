@@ -19,9 +19,12 @@
 import { readFileSync } from "node:fs";
 import type { RestGetResult } from "pi-lean-host/core/helpers.js";
 import { parseApiGuide } from "pi-lean-host/core/parse-api-guide.js";
-import { resolveOpForExecution } from "pi-lean-host/core/resolve-op.js";
 import { describe, expect, it } from "vitest";
-import { itWhen, withTempDirs } from "../_shared/test-harness.js";
+import {
+	createResolveOpFn,
+	itWhen,
+	withTempDirs,
+} from "../_shared/test-harness.js";
 
 const DIR = "telegram-bot-api";
 const DOMAIN = "telegram.org";
@@ -84,25 +87,16 @@ function asRestGet(result: RestGetResult | unknown): RestGetResult {
 	return result as RestGetResult;
 }
 
-/** Run one op through the canonical resolve-op pipeline; throws on failure. */
+/** The canonical resolve-op pipeline, pinned to this guide's domain. */
+const runResolveOp = createResolveOpFn(DOMAIN);
+
+/** Run one op; throws on pipeline rejection or HTTP >= 400 HelperError. */
 async function runOp(
 	guidesDir: string,
 	name: string,
 	params: Record<string, unknown> = {},
 ): Promise<TgRun> {
-	const { setUserGuidesDir, findGuidesByDomain } = await import(
-		"pi-lean-host/core/guide-store.js"
-	);
-	setUserGuidesDir(guidesDir);
-	const match = findGuidesByDomain(DOMAIN).find(({ guide }) =>
-		guide.operations.some((o) => o.name === name),
-	)!;
-	const op = match.guide.operations.find((o) => o.name === name)!;
-	const res = await resolveOpForExecution(match.guide, op, match.dirName, {
-		userParams: params,
-	});
-	if (!res.ok) throw new Error(`${name}: pipeline rejected — ${res.reason}`);
-	const r = asRestGet(res.result);
+	const r = asRestGet(await runResolveOp(guidesDir, name, params));
 	return { url: r.url, data: r.data as TgEnvelope };
 }
 

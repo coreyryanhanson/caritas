@@ -2,10 +2,11 @@
  * Etherscan V2 recipe validity tests — endpoint coverage + live fetch sanity.
  *
  * Verifies the A2 (query-param secret) path end-to-end against the live API:
- * resolves the `api_key` secret from the store, injects it as the `apikey`
- * query param BELOW the agent params map, and executes the keyed ops. The
- * surfaced URL must be redacted (`?apikey=***`) and the returned params map
- * must not contain the key.
+ * ops run through the canonical `resolveOpForExecution` pipeline (via
+ * `createResolveOpFn`), which resolves the `api_key` secret from the store,
+ * injects it as the `apikey` query param BELOW the agent params map, and
+ * executes the keyed ops. The surfaced URL must be redacted
+ * (`?apikey=***`) and the returned params map must not contain the key.
  *
  * The parse test runs in bare CI (no network). Live endpoint tests are
  * skipped unless HOST_INTEGRATION=1 and a key is provisioned at
@@ -15,9 +16,17 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import type {
+	PaginateResult,
+	RestGetResult,
+} from "pi-lean-host/core/helpers.js";
 import { parseApiGuide } from "pi-lean-host/core/parse-api-guide.js";
 import { describe, expect, it } from "vitest";
-import { itWhen, withTempDirs } from "../_shared/test-harness.js";
+import {
+	createResolveOpFn,
+	itWhen,
+	withTempDirs,
+} from "../_shared/test-harness.js";
 
 const DOMAIN = "etherscan.io";
 const DIR = "etherscan";
@@ -48,8 +57,37 @@ async function throttleLive(): Promise<void> {
 	lastLiveAt = Date.now();
 }
 
-/** Resolve the stored key-injected query auth for a live restGet against the guide. */
-async function authFor(guidesDir: string) {
+/** Callers know the op's `via`; the union is narrowed honestly per-file. */
+function asRestGet(result: RestGetResult | unknown): RestGetResult {
+	return result as RestGetResult;
+}
+function asPaginate(result: PaginateResult | unknown): PaginateResult {
+	return result as PaginateResult;
+}
+
+/** The canonical resolve-op pipeline, pinned to this guide's domain. */
+const runResolveOp = createResolveOpFn(DOMAIN);
+
+/** Run one restGet op through the pipeline; throws on rejection/HTTP >= 400. */
+async function runRestGet(
+	guidesDir: string,
+	opName: string,
+	params: Record<string, unknown>,
+): Promise<RestGetResult> {
+	return asRestGet(await runResolveOp(guidesDir, opName, params));
+}
+
+/** Run one paginate op through the pipeline; throws on rejection/HTTP >= 400. */
+async function runPaginate(
+	guidesDir: string,
+	opName: string,
+	params: Record<string, unknown>,
+): Promise<PaginateResult> {
+	return asPaginate(await runResolveOp(guidesDir, opName, params));
+}
+
+/** The raw stored key, for not-to-contain assertions (never printed). */
+async function rawKey(guidesDir: string): Promise<string> {
 	const { resolveSecretQueryParams } = await import(
 		"pi-lean-host/core/auth.js"
 	);
@@ -60,37 +98,11 @@ async function authFor(guidesDir: string) {
 	const { guide } = findGuidesByDomain(DOMAIN).find(({ guide }) =>
 		guide.operations.some((o) => o.name === "getBalance"),
 	)!;
+	if (guide.auth.kind !== "static-key") throw new Error("static-key expected");
 	const res = resolveSecretQueryParams(guide.auth, DOMAIN);
 	expect(res.absentRequired).toEqual([]);
 	expect(res.queryParams["apikey"]).toBeTruthy();
-	return {
-		guide,
-		secretQueryParams: res.queryParams,
-		secretQueryParamNames: new Set(Object.keys(res.queryParams)),
-		secretValues: Object.values(res.queryParams),
-	};
-}
-
-async function runRestGet(
-	guidesDir: string,
-	opName: string,
-	params: Record<string, unknown>,
-) {
-	const { restGet } = await import("pi-lean-host/core/helpers.js");
-	const { guide, ...auth } = await authFor(guidesDir);
-	const op = guide.operations.find((o) => o.name === opName)!;
-	return restGet(guide.apiHost, op, params, guide, auth);
-}
-
-async function runPaginate(
-	guidesDir: string,
-	opName: string,
-	params: Record<string, unknown>,
-) {
-	const { paginate } = await import("pi-lean-host/core/helpers.js");
-	const { guide, ...auth } = await authFor(guidesDir);
-	const op = guide.operations.find((o) => o.name === opName)!;
-	return paginate(guide.apiHost, op, params, guide, auth);
+	return res.queryParams["apikey"]!;
 }
 
 describe("Etherscan recipe", () => {
@@ -179,24 +191,16 @@ describe("Etherscan recipe", () => {
 		"getBalance fetches with the key injected below the params and the URL redacted",
 		withTempDirs(DIR)(async ({ guidesDir }) => {
 			await throttleLive();
-			const { guide, ...auth } = await authFor(guidesDir);
-			const op = guide.operations.find((o) => o.name === "getBalance")!;
-			const { restGet } = await import("pi-lean-host/core/helpers.js");
-			const result = await restGet(
-				guide.apiHost,
-				op,
-				{ address: TEST_ADDRESS },
-				guide,
-				auth,
-			);
+			const key = await rawKey(guidesDir);
+			const result = await runRestGet(guidesDir, "getBalance", {
+				address: TEST_ADDRESS,
+			});
 			const data = result.data as { status: string; result: string };
 			expect(data.status).toBe("1");
 			expect(data.result).toBeTruthy();
 			// A2 URL channel: the surfaced URL is redacted, the raw key never appears.
 			expect(result.url).toContain("apikey=***");
-			for (const v of auth.secretValues) {
-				expect(result.url).not.toContain(v);
-			}
+			expect(result.url).not.toContain(key);
 			// A2 params channel: the returned map is agent-supplied only.
 			expect(result.params["apikey"]).toBeUndefined();
 		}),
