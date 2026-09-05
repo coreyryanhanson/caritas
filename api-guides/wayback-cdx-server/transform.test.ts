@@ -200,9 +200,10 @@ describe("queryCdx transform through the real pipeline (mocked transport)", () =
 			op,
 			{ url: "example.com" },
 			guide,
-			undefined,
-			transformFn ?? undefined,
-			"wayback-cdx-server",
+			{
+				transformFn: transformFn ?? undefined,
+				dirName: "wayback-cdx-server",
+			},
 		);
 
 		expect(Array.isArray(result.data)).toBe(true);
@@ -233,9 +234,10 @@ describe("queryCdx transform through the real pipeline (mocked transport)", () =
 			op,
 			{ url: "example.com" },
 			guide,
-			undefined,
-			throwing,
-			"wayback-cdx-server",
+			{
+				transformFn: throwing,
+				dirName: "wayback-cdx-server",
+			},
 		);
 
 		// Raw array-of-arrays preserved with the warning; op not disabled.

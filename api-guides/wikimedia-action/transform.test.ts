@@ -180,9 +180,10 @@ describe("openSearch transform through the real pipeline (mocked transport)", ()
 			op,
 			{ search: "solar eclipse" },
 			guide,
-			undefined,
-			transformFn ?? undefined,
-			"wikimedia-action",
+			{
+				transformFn: transformFn ?? undefined,
+				dirName: "wikimedia-action",
+			},
 		);
 
 		expect(Array.isArray(result.data)).toBe(true);
@@ -213,9 +214,10 @@ describe("openSearch transform through the real pipeline (mocked transport)", ()
 			op,
 			{ search: "solar eclipse" },
 			guide,
-			undefined,
-			throwing,
-			"wikimedia-action",
+			{
+				transformFn: throwing,
+				dirName: "wikimedia-action",
+			},
 		);
 
 		// Raw array preserved with the warning; op not disabled.

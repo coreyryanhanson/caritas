@@ -281,15 +281,10 @@ describe("summary feed transform through the real pipeline (mocked transport)", 
 		const transformFn = await loadTransform("usgs-earthquake");
 		expect(typeof transformFn).toBe("function");
 
-		const result = await restGet(
-			"https://earthquake.usgs.gov",
-			op,
-			{},
-			guide,
-			undefined,
-			transformFn ?? undefined,
-			"usgs-earthquake",
-		);
+		const result = await restGet("https://earthquake.usgs.gov", op, {}, guide, {
+			transformFn: transformFn ?? undefined,
+			dirName: "usgs-earthquake",
+		});
 
 		const data = result.data as { features: Record<string, unknown>[] };
 		expect(Array.isArray(data.features)).toBe(true);
@@ -316,15 +311,10 @@ describe("summary feed transform through the real pipeline (mocked transport)", 
 			throw new Error("boom");
 		};
 
-		const result = await restGet(
-			"https://earthquake.usgs.gov",
-			op,
-			{},
-			guide,
-			undefined,
-			throwing,
-			"usgs-earthquake",
-		);
+		const result = await restGet("https://earthquake.usgs.gov", op, {}, guide, {
+			transformFn: throwing,
+			dirName: "usgs-earthquake",
+		});
 
 		// Raw FeatureCollection preserved with the warning; op not disabled.
 		expect(result.data).toEqual(FEATURE_COLLECTION);
@@ -355,9 +345,10 @@ describe("queryEvents transform through the real pipeline (mocked transport)", (
 			op,
 			{ minmagnitude: 4 },
 			guide,
-			{},
-			transformFn ?? undefined,
-			"usgs-earthquake",
+			{
+				transformFn: transformFn ?? undefined,
+				dirName: "usgs-earthquake",
+			},
 		);
 
 		expect(result.items.length).toBe(2);
@@ -390,9 +381,10 @@ describe("queryEvents transform through the real pipeline (mocked transport)", (
 			op,
 			{ minmagnitude: 4 },
 			guide,
-			{},
-			throwing,
-			"usgs-earthquake",
+			{
+				transformFn: throwing,
+				dirName: "usgs-earthquake",
+			},
 		);
 
 		// Every item failed → all in failedItems (raw), none dropped.

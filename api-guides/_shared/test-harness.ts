@@ -112,24 +112,14 @@ export function createFetchOp(
 		}
 		const passTransform = transformFn ?? undefined;
 		return op.via === "paginate"
-			? paginate(
-					match.guide.apiHost,
-					op,
-					params,
-					match.guide,
-					undefined,
-					passTransform,
-					match.dirName,
-				)
-			: restGet(
-					match.guide.apiHost,
-					op,
-					params,
-					match.guide,
-					undefined,
-					passTransform,
-					match.dirName,
-				);
+			? paginate(match.guide.apiHost, op, params, match.guide, {
+					transformFn: passTransform,
+					dirName: match.dirName,
+				})
+			: restGet(match.guide.apiHost, op, params, match.guide, {
+					transformFn: passTransform,
+					dirName: match.dirName,
+				});
 	};
 }
 
