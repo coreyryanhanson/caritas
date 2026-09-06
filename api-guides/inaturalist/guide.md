@@ -73,20 +73,28 @@ operations:
         description: >
           Filter by taxon id (or comma-separated ids — descendants are
           included). Prefer `taxon_name` when you know a name instead.
+          Accepts a single value or an array (joined with commas).
+        listStyle: comma
       taxon_name:
         description: >
           Taxon must have a scientific or common name matching this string
           (e.g. `Danaus plexippus`). Multiple values may be comma-separated.
+          Accepts a single value or an array (joined with commas).
+        listStyle: comma
       place_id:
         description: >
           Must be observed within the place with this ID (e.g. `1` is the
-          United States). Multiple values may be comma-separated.
+          United States). Multiple values may be comma-separated. Accepts a
+          single value or an array (joined with commas).
+        listStyle: comma
       user_id:
         description: Observer user id or login; restricts to that user's observations.
       quality_grade:
         description: >
           Comma-separated quality grades: `casual`, `needs_id`, `research`
-          (research = community-confirmed).
+          (research = community-confirmed). Accepts a single value or an
+          array (joined with commas).
+        listStyle: comma
       d1:
         description: Observed-on date lower bound (YYYY-MM-DD).
       d2:
@@ -100,6 +108,8 @@ operations:
       geoprivacy:
         description: >
           Comma-separated geoprivacy filter: `open`, `obscured`, `private`.
+          Accepts a single value or an array (joined with commas).
+        listStyle: comma
   - name: getObservation
     via: restGet
     path: /v1/observations/{id}
@@ -293,7 +303,9 @@ operations:
           matches both `Turdus migratorius` and common-name matches).
       id:
         description: >
-          Exact match — comma-separated taxon ids.
+          Exact match — comma-separated taxon ids. Accepts a single value or
+          an array (joined with commas).
+        listStyle: comma
       taxon_id:
         description: >
           This taxon and all of its descendants (live-verified: `taxon_id`

@@ -87,7 +87,8 @@ operations:
         description: opened | closed | all.
         default: all
       labels:
-        description: Comma-separated label names to filter by.
+        description: Comma-separated label names to filter by. Accepts a single value or an array (joined with commas).
+        listStyle: comma
       search:
         description: Search issues for the given text.
       scope:

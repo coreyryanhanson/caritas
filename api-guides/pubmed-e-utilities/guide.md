@@ -125,7 +125,9 @@ operations:
           input. OR pass the `query_key` + `WebEnv` from a `usehistory=y`
           `esearch-raw` to summarize the stored result set instead. Provide
           one or the other (a bare call with neither reaches NCBI with no
-          input and gets a server-side error).
+          input and gets a server-side error). Accepts a single value or an
+          array (joined with commas).
+        listStyle: comma
       query_key:
         description: >
           Stateful input — the History-server query key returned by a
@@ -160,7 +162,9 @@ operations:
           Comma-delimited list of PMIDs (≤ ~200) to fetch full records for —
           the stateless input. OR pass the `query_key` + `WebEnv` from a
           `usehistory=y` `esearch-raw` to fetch the stored result set instead.
-          Provide one or the other.
+          Provide one or the other. Accepts a single value or an array
+          (joined with commas).
+        listStyle: comma
       query_key:
         description: >
           Stateful input — the History-server query key returned by a
@@ -193,8 +197,9 @@ operations:
         description: Database to link to. Defaults to pubmed.
         default: pubmed
       id:
-        description: Comma-delimited list of input UIDs.
+        description: Comma-delimited list of input UIDs. Accepts a single value or an array (joined with commas).
         required: true
+        listStyle: comma
       cmd:
         description: >
           Command: neighbor (default) | neighbor_score | acheck | ncheck |

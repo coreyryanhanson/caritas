@@ -56,7 +56,8 @@ operations:
         description: Native balance for multiple addresses action.
       address:
         required: true
-        description: "Comma-separated wallet addresses (0x-prefixed), up to 20 per call."
+        description: "Comma-separated wallet addresses (0x-prefixed), up to 20 per call. Accepts a single value or an array (joined with commas)."
+        listStyle: comma
       tag:
         default: latest
         description: "Block tag — latest (default), earliest, or a hex block number."
@@ -503,7 +504,8 @@ operations:
         description: Contract deployer + creation-tx action.
       contractaddresses:
         required: true
-        description: "Comma-separated contract addresses (0x-prefixed)."
+        description: "Comma-separated contract addresses (0x-prefixed). Accepts a single value or an array (joined with commas)."
+        listStyle: comma
 
   # ── Gas Tracker ───────────────────────────────────────────────────────
   - name: getGasOracle

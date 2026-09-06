@@ -60,7 +60,8 @@ operations:
       totalCountPath: feed.totalResults
     params:
       id_list:
-        description: Comma-delimited arXiv IDs (e.g. `cond-mat/0011267,0710.5765v1`). `vN` selects a specific version.
+        description: Comma-delimited arXiv IDs (e.g. `cond-mat/0011267,0710.5765v1`). `vN` selects a specific version. Accepts a single value or an array (joined with commas).
+        listStyle: comma
         required: true
       max_results:
         description: Results per page.

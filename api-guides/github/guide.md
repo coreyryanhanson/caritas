@@ -312,7 +312,8 @@ operations:
       state:
         description: open, closed, or all (default open).
       labels:
-        description: Comma-separated label names to filter by.
+        description: Comma-separated label names to filter by. Accepts a single value or an array (joined with commas) — e.g. `["bug", "help wanted"]`.
+        listStyle: comma
       sort:
         description: created, updated, comments.
       direction:

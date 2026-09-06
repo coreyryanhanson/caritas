@@ -45,7 +45,9 @@ operations:
           Comma-separated whitelist of product fields to return (e.g.
           `code,product_name,brands,nutriments,nutriscore_grade`). Strongly
           recommended — full products are large. Special aggregates:
-          `attribute_groups`, `knowledge_panels`.
+          `attribute_groups`, `knowledge_panels`. Accepts a single value or
+          an array (joined with commas).
+        listStyle: comma
       blame:
         description: >
           `blame=1` adds per-field edit attribution (`userid`, `t`, `rev`,
@@ -74,7 +76,8 @@ operations:
       nutrition_grades_tags:
         description: Nutri-Score filter, e.g. `a` (single) or `a|b` (OR).
       code:
-        description: Barcode filter; also the bulk-lookup key (comma-separated list).
+        description: Barcode filter; also the bulk-lookup key (comma-separated list). Accepts a single value or an array (joined with commas).
+        listStyle: comma
       sort_by:
         description: >
           Sort key, e.g. `product_name`, `last_modified_t`, `created_t`,
@@ -84,7 +87,8 @@ operations:
           Comma-separated whitelist of product fields to return (e.g.
           `code,product_name,brands,nutriscore_grade`). Strongly recommended
           — full products are large and the search endpoint is slow enough
-          as it is.
+          as it is. Accepts a single value or an array (joined with commas).
+        listStyle: comma
   - name: getProductsByCodes
     via: restGet
     path: /api/v2/search
@@ -96,11 +100,15 @@ operations:
         description: >
           Comma-separated barcode list for a bulk lookup (no pagination —
           the server returns all matches in one shot). e.g.
-          `3263859883713,8437011606013,6111069000451`.
+          `3263859883713,8437011606013,6111069000451`. Accepts a single
+          value or an array (joined with commas).
+        listStyle: comma
       fields:
         description: >
           Comma-separated whitelist — strongly recommended; same field
-          grammar as `getProduct`.
+          grammar as `getProduct`. Accepts a single value or an array
+          (joined with commas).
+        listStyle: comma
   - name: extractIngredientsOcr
     via: restGet
     path: /cgi/ingredients.pl
@@ -155,7 +163,8 @@ operations:
       include_root_entries:
         description: '`1` — include root taxonomy entries in the response.'
       lc:
-        description: Language code(s) for localized names, comma-separated (e.g. `en,fr`).
+        description: Language code(s) for localized names, comma-separated (e.g. `en,fr`). Accepts a single value or an array (joined with commas).
+        listStyle: comma
       cc:
         description: Country context (e.g. `fr`).
   - name: listAttributeGroups
