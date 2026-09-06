@@ -50,10 +50,13 @@ operations:
     params:
       id:
         description: Game/category ID (up to 100, repeatable).
+        listStyle: repeat
       name:
         description: Exact game/category title (up to 100, repeatable).
+        listStyle: repeat
       igdb_id:
         description: IGDB ID of the game (up to 100, repeatable).
+        listStyle: repeat
   - name: searchCategories
     via: paginate
     path: /helix/search/categories
@@ -105,10 +108,13 @@ operations:
     params:
       user_id:
         description: Filter by broadcaster user ID (up to 100, repeatable).
+        listStyle: repeat
       user_login:
         description: Filter by broadcaster login name (up to 100, repeatable).
+        listStyle: repeat
       game_id:
         description: Filter by game/category ID (up to 100, repeatable).
+        listStyle: repeat
       language:
         description: ISO 639-1 language code (or "other").
       type:
@@ -126,8 +132,10 @@ operations:
     params:
       id:
         description: User ID (up to 100, repeatable).
+        listStyle: repeat
       login:
         description: Login name (up to 100, repeatable).
+        listStyle: repeat
   - name: channelInfo
     via: restGet
     path: /helix/channels
@@ -135,6 +143,7 @@ operations:
     params:
       broadcaster_id:
         description: Broadcaster ID (up to 100, repeatable).
+        listStyle: repeat
         required: true
   # ── Clips, videos, schedule ──────────────────────────────────────
   - name: clips
@@ -155,6 +164,7 @@ operations:
         description: Clips captured from streams playing this game.
       id:
         description: Specific clip IDs (up to 100, repeatable).
+        listStyle: repeat
       started_at:
         description: Window start (RFC 3339). Default window is one week.
       ended_at:
@@ -182,6 +192,7 @@ operations:
     params:
       id:
         description: Specific video IDs (up to 100, repeatable).
+        listStyle: repeat
       user_id:
         description: Videos owned by this user.
       game_id:
@@ -214,6 +225,7 @@ operations:
         required: true
       id:
         description: Specific segment IDs (up to 100, repeatable).
+        listStyle: repeat
       start_time:
         description: Return segments starting at/after this UTC time (RFC 3339).
       first:
@@ -269,6 +281,7 @@ operations:
     params:
       emote_set_id:
         description: Emote set ID (up to 25, repeatable). The global set is "0".
+        listStyle: repeat
         required: true
   - name: chatBadgesGlobal
     via: restGet
