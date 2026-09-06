@@ -215,11 +215,12 @@ describe("Mastodon recipe structure (always-on)", () => {
 				expect(op.pagination).toBeUndefined();
 			}
 
-			// Repeatable array params carry the literal `[]` suffix key;
-			// the plain-text /health endpoint declares a text parse shape.
-			expect(byName.get("accountRelationships")!.params).toHaveProperty("id[]");
-			expect(byName.get("markers")!.params).toHaveProperty("timeline[]");
-			expect(byName.get("accounts")!.params).toHaveProperty("id[]");
+			// Repeatable array params declare the clean name + `listStyle:
+			// bracket` (the `[]` dress is applied at serialization); the
+			// plain-text /health endpoint declares a text parse shape.
+			expect(byName.get("accountRelationships")!.params).toHaveProperty("id");
+			expect(byName.get("markers")!.params).toHaveProperty("timeline");
+			expect(byName.get("accounts")!.params).toHaveProperty("id");
 			expect(byName.get("health")!.parse?.format).toBe("text");
 		}),
 	);
@@ -265,7 +266,7 @@ describe("Mastodon live integration (oauth2 authorization_code)", () => {
 		"markers returns the saved home-timeline position",
 		withTempDirs(DIR)(async ({ guidesDir }) => {
 			const outcome = (await runOp(guidesDir, "markers", {
-				"timeline[]": "home",
+				timeline: "home",
 			}))!;
 			const d = (outcome.result as RestGetResult).data;
 			expect(typeof d).toBe("object");
@@ -452,7 +453,7 @@ describe("Mastodon live integration (oauth2 authorization_code)", () => {
 	);
 
 	itWhen(
-		"account reads the pinned @Mastodon account; accounts(id[])+relationships resolve",
+		"account reads the pinned @Mastodon account; accounts(id)+relationships resolve",
 		withTempDirs(DIR)(async ({ guidesDir }) => {
 			const one = (await runOp(guidesDir, "account", {
 				id: MASTODON_ID,
@@ -466,7 +467,7 @@ describe("Mastodon live integration (oauth2 authorization_code)", () => {
 			expectNoTokenOnUrls(one);
 
 			const multi = (await runOp(guidesDir, "accounts", {
-				"id[]": MASTODON_ID,
+				id: MASTODON_ID,
 			}))!;
 			const fetched = (multi.result as RestGetResult).data as Array<{
 				id: string;
@@ -474,7 +475,7 @@ describe("Mastodon live integration (oauth2 authorization_code)", () => {
 			expect(fetched.map((a) => a.id)).toContain(MASTODON_ID);
 
 			const relOutcome = (await runOp(guidesDir, "accountRelationships", {
-				"id[]": MASTODON_ID,
+				id: MASTODON_ID,
 			}))!;
 			const rel = (relOutcome.result as RestGetResult).data as Array<
 				Record<string, unknown>
@@ -484,7 +485,7 @@ describe("Mastodon live integration (oauth2 authorization_code)", () => {
 			expect(rel[0]).toHaveProperty("following");
 
 			const familiar = (await runOp(guidesDir, "familiarFollowers", {
-				"id[]": MASTODON_ID,
+				id: MASTODON_ID,
 			}))!;
 			const fam = (familiar.result as RestGetResult).data as Array<{
 				id: string;

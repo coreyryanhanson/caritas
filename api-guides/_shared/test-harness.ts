@@ -34,6 +34,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { ApiGuide, Operation } from "pi-lean-host/core/api-guide-types.js";
 import type { TransformFn } from "pi-lean-host/core/local-helpers.js";
 import { it } from "vitest";
 
@@ -206,5 +207,46 @@ export function withTempDirs(
 				rmSync(guidesDir, { recursive: true, force: true });
 			}
 		};
+	};
+}
+
+/**
+ * Mocked-recipe harness (bare-CI tier). `withTempDirs` above is
+ * HOST_INTEGRATION-gated, so mocked-transport tests can't use it — this is
+ * its bare-CI twin: copy a real recipe folder into a throwaway guides dir
+ * and load it through the real parser, so a wire-form test always
+ * exercises the shipped guide.md (the fixture can't drift). Pass the
+ * returned `cleanup` to `afterAll`. Global guide-store state
+ * (`setUserGuidesDir` + `invalidateCache`) is set per load, matching the
+ * `createFetchOp` seam.
+ */
+export function setupMockedRecipe(domain: string): {
+	load: (opName: string) => Promise<{ op: Operation; guide: ApiGuide }>;
+	cleanup: () => void;
+} {
+	const guidesDir = mkdtempSync(join(tmpdir(), "pi-host-mocked-recipe-"));
+	copyDomains(guidesDir, domain);
+	return {
+		load: async (opName) => {
+			const { invalidateCache, setUserGuidesDir } = await import(
+				"pi-lean-host/core/guide-store.js"
+			);
+			const { loadApiGuidesFromDir } = await import(
+				"pi-lean-host/core/parse-api-guide.js"
+			);
+			setUserGuidesDir(guidesDir);
+			invalidateCache();
+			const loaded = loadApiGuidesFromDir(guidesDir);
+			const guide = loaded.guides[domain];
+			if (!guide) {
+				throw new Error(
+					`recipe not found: ${domain} (${loaded.malformed.length} malformed)`,
+				);
+			}
+			const op = guide.operations.find((o) => o.name === opName);
+			if (!op) throw new Error(`op ${opName} not found in ${domain}`);
+			return { op, guide };
+		},
+		cleanup: () => rmSync(guidesDir, { recursive: true, force: true }),
 	};
 }

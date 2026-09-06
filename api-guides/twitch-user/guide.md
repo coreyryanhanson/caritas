@@ -170,7 +170,8 @@ operations:
         description: Broadcaster whose subscribers to list (must match the access token's user).
         required: true
       user_id:
-        description: Filter to specific subscriber IDs (up to 100, repeatable).
+        description: Filter to specific subscriber IDs (up to 100; an array serializes as repeated `user_id=` pairs).
+        listStyle: repeat
       first:
         description: Maximum number of items per page (1–100, default 20).
       after:

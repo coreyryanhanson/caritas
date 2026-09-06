@@ -34,13 +34,16 @@ operations:
         description: Publication date on or after, YYYY-MM-DD (spec name `conditions[publication_date][gte]`).
       "conditions[publication_date][lte]":
         description: Publication date on or before, YYYY-MM-DD (spec name `conditions[publication_date][lte]`).
-      "conditions[agencies][]":
-        description: Publishing agency slug(s) (spec name `conditions[agencies][]`). Repeatable.
-      "conditions[type][]":
+      "conditions[agencies]":
+        description: Publishing agency slug(s) — an array serializes as repeated `conditions[agencies][]=` pairs.
+        listStyle: bracket
+      "conditions[type]":
         description: >
-          Document type(s) (spec name `conditions[type][]`). Repeatable.
-          Values: `RULE` (Final Rule), `PRORULE` (Proposed Rule), `NOTICE`
-          (Notice), `PRESDOCU` (Presidential Document).
+          Document type(s) — an array serializes as repeated
+          `conditions[type][]=` pairs. Values: `RULE` (Final Rule),
+          `PRORULE` (Proposed Rule), `NOTICE` (Notice), `PRESDOCU`
+          (Presidential Document).
+        listStyle: bracket
       order:
         description: >
           Sort order (spec name `order`). Values: `relevance`, `newest`,

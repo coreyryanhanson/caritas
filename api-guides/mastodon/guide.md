@@ -48,16 +48,16 @@ operations:
     path: /api/v1/preferences
     accept: json
     params: {}
-  # Saved read positions for timelines. `timeline[]` takes one value per
-  # call (home or notifications) — the repeatable form isn't expressible.
+  # Saved read positions for timelines (home or notifications).
   - name: markers
     via: restGet
     path: /api/v1/markers
     accept: json
     params:
-      "timeline[]":
-        description: Which timeline position(s) to read — `home` or `notifications` (one per call).
+      timeline:
+        description: Which timeline position(s) to read — `home` or `notifications` (array serializes as repeated `timeline[]=` pairs).
         required: true
+        listStyle: bracket
   - name: favourites
     via: restGet
     path: /api/v1/favourites
@@ -230,10 +230,12 @@ operations:
         description: Return only notifications received from this account.
       include_filtered:
         description: Whether to include notifications filtered by the NotificationPolicy (default false).
-      "types[]":
-        description: Only these notification types (one per call).
-      "exclude_types[]":
-        description: Exclude these notification types (one per call).
+      types:
+        description: Only these notification types.
+        listStyle: bracket
+      exclude_types:
+        description: Exclude these notification types.
+        listStyle: bracket
   - name: notification
     via: restGet
     path: /api/v1/notifications/{id}
@@ -250,10 +252,12 @@ operations:
         description: Count at most this many (default 100, max 1000).
       account_id:
         description: Only count unread notifications received from this account.
-      "types[]":
-        description: Only count these notification types (one per call).
-      "exclude_types[]":
-        description: Exclude these notification types (one per call).
+      types:
+        description: Only count these notification types.
+        listStyle: bracket
+      exclude_types:
+        description: Exclude these notification types.
+        listStyle: bracket
   - name: notificationPolicy
     via: restGet
     path: /api/v2/notifications/policy
@@ -304,12 +308,15 @@ operations:
         description: "`full` (default) or `partial_avatars` — whether grouped accounts render in full or in the stripped-down `partial_accounts` list."
       include_filtered:
         description: Whether to include filtered notifications (default false).
-      "grouped_types[]":
-        description: Which notification types may be grouped (one per call).
-      "types[]":
-        description: Only these notification types (one per call).
-      "exclude_types[]":
-        description: Exclude these notification types (one per call).
+      grouped_types:
+        description: Which notification types may be grouped.
+        listStyle: bracket
+      types:
+        description: Only these notification types.
+        listStyle: bracket
+      exclude_types:
+        description: Exclude these notification types.
+        listStyle: bracket
   - name: notificationGroup
     via: restGet
     path: /api/v2/notifications/{group_key}
@@ -333,8 +340,9 @@ operations:
         description: Count at most this many (default 100, max 1000).
       account_id:
         description: Only count unread notifications received from this account.
-      "grouped_types[]":
-        description: Which notification types may be grouped (one per call).
+      grouped_types:
+        description: Which notification types may be grouped.
+        listStyle: bracket
   # ── Timelines ────────────────────────────────────────────────────
   - name: homeTimeline
     via: restGet
@@ -417,15 +425,16 @@ operations:
     params:
       id:
         description: The account ID.
-  # Multiple accounts by ID — repeatable `id[]` form; one value per call here.
+  # Multiple accounts by ID — repeatable `id[]` form.
   - name: accounts
     via: restGet
     path: /api/v1/accounts
     accept: json
     params:
-      "id[]":
-        description: Account ID (one per call; the repeatable `id[]` form isn't expressible).
+      id:
+        description: Account ID (array serializes as repeated `id[]=` pairs).
         required: true
+        listStyle: bracket
   - name: accountStatuses
     via: restGet
     path: /api/v1/accounts/{id}/statuses
@@ -530,9 +539,10 @@ operations:
     path: /api/v1/accounts/relationships
     accept: json
     params:
-      "id[]":
-        description: Account ID to check the relationship with (one per call; the API's repeatable `id[]` form isn't expressible here).
+      id:
+        description: Account ID to check the relationship with (array serializes as repeated `id[]=` pairs).
         required: true
+        listStyle: bracket
       with_suspended:
         description: Whether to include suspended users (default false).
   - name: familiarFollowers
@@ -540,9 +550,10 @@ operations:
     path: /api/v1/accounts/familiar_followers
     accept: json
     params:
-      "id[]":
-        description: Account ID to find familiar followers for (one per call).
+      id:
+        description: Account ID to find familiar followers for (array serializes as repeated `id[]=` pairs).
         required: true
+        listStyle: bracket
   - name: lookupAccount
     via: restGet
     path: /api/v1/accounts/lookup
@@ -580,9 +591,10 @@ operations:
     path: /api/v1/statuses
     accept: json
     params:
-      "id[]":
-        description: Status ID (one per call; the repeatable `id[]` form isn't expressible here).
+      id:
+        description: Status ID (array serializes as repeated `id[]=` pairs).
         required: true
+        listStyle: bracket
   - name: statusContext
     via: restGet
     path: /api/v1/statuses/{id}/context
@@ -855,11 +867,11 @@ operations:
   `restGet` with the first page; callers walk pages by passing the `max_id`
   (or `min_id`) of the last-seen item. No `paginate` op is possible without
   a header-aware pagination style in the framework.
-- **Repeatable array params serialize one value per call.** Endpoints
+- **Repeatable array params serialize per `listStyle: bracket`.** Endpoints
   documented as taking `id[]` (relationships, familiar followers,
-  multi-status fetch) or `timeline[]` accept a single value per call here —
-  the query builder serializes scalar values only. Multi-ID fan-out is a
-  caller-side loop.
+  multi-status fetch), `timeline[]`, or `types[]`-family params declare the
+  clean param name; an array value fans out as repeated `key[]=` wire pairs
+  (a scalar still serializes single-valued, exactly as before).
 - **Public endpoints carry the token too.** Instance metadata, trends,
   custom emojis, directory, lookup, and public statuses accept the Bearer
   without complaint (and the same op works unauthenticated on any client).
