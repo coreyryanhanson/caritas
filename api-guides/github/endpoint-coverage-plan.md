@@ -503,7 +503,7 @@ Deviations / confirmations vs the frozen plan:
 
 1. **Pagination style is `page`, not `offset-limit`.** The plan's "Pagination
    style" section suggested `offset-limit` with `pageParam: page`. That
-   predates the Batch A framework fix that relabeled `offset-limit` to
+   predates the framework fix that relabeled `offset-limit` to
    row-offset advance (offset += pageSize). GitHub's `?page=N` is a true page
    index, so every GitHub paginated op uses `style: page` (advance +1), the
    same as `searchRepos`. All paginated ops: `itemsPath`, `pageParam: page`,

@@ -279,7 +279,7 @@ Follow the boe.es pattern — one file, co-located:
 Manual: run `api-guide archive.org` from a pi session, confirm all ~5
 ops appear with correct param hints.
 
-## Implementation notes (rollout Batch B, #4)
+## Implementation notes (rollout #4)
 
 Shipped 2026-08: 3 ops added (`getItemField`, `getItemFilesSlice`, `searchItems`)
 → `guide.md` now has **4 ops** (1 existing + 3 new). Phase 0 probe results:

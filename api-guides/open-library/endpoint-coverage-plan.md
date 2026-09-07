@@ -635,7 +635,7 @@ the 20-op live sweep. This is a test-authoring concern, not a guide change.
 
 ## Implementation notes
 
-Batch C rollout, implemented 2026-08-06. All **19** plan endpoints shipped
+Rollout, implemented 2026-08-06. All **19** plan endpoints shipped
 (all 7 families); 20 ops total (incl. existing `searchBooks`).
 
 1. **Path params not re-declared in `params`.** The proposed YAML declared

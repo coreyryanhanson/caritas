@@ -384,7 +384,7 @@ implemented ops appear with correct param hints.
   `fo=yaml`. Not adding YAML variants — JSON is the standard format for
   programmatic consumption.
 
-## Implementation notes (2026-08, Batch B rollout)
+## Implementation notes (2026-08 rollout)
 
 **Shipped:** all 5 planned operations from Groups A–D landed in `guide.md`
 (`listCollections`, `getCollection`, `listItemsByFormat`, `searchFieldIndex`,

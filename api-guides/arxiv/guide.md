@@ -144,7 +144,7 @@ The op caps `gatherAllMax` at 1000 to bound such walks, but the agent
 should prefer explicit `start`-based pagination up to `serverTotal` and
 spot-check items for `id` containing `/api/errors` after large walks.
 
-> Watch item (P2-1): if a sentinel/value-comparison extension lands
+> If a sentinel/value-comparison extension ever lands
 > (`path == sentinel`, e.g. `feed.entry.id != https://arxiv.org/api/errors`),
 > this op is its first consumer — re-verify the past-end shape live before
 > declaring it.

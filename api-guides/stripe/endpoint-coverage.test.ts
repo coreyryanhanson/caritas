@@ -1,7 +1,7 @@
 /**
  * Stripe recipe validity tests — endpoint coverage + live fetch sanity.
  *
- * This is the Sprint-2 live proof of the P0-3 `hasMorePath` half: the
+ * This is the live proof of the `hasMorePath` half: the
  * `has_more` + `starting_after = data[-1].id` walk executed end-to-end
  * against the real Stripe API with a read-only restricted key.
  *

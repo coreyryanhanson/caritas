@@ -294,11 +294,10 @@ Key findings recorded for the next implementer:
 
 ---
 
-## Addendum — SRU 200-OK `<diagnostics>` envelope (Sprint 0.5 recheck, 2026-08-10)
+## Addendum — SRU 200-OK `<diagnostics>` envelope (recheck, 2026-08-10)
 
-> Evidence for Sprint 3's C1 addendum (`api-hardening-and-proof-recipes.md`
-> Workstream C). Recipe-level, **no core change** — same family as GitHub's
-> `incomplete_results`.
+> Evidence for the guide-hardening workstream. Recipe-level, **no core
+> change** — same family as GitHub's `incomplete_results`.
 
 ### Docs reconfirmation
 
@@ -346,7 +345,7 @@ fires and the op returns `items: [], totalFetched: 0` — **indistinguishable
 from a genuine zero-results query**, so the diagnostic is silently
 swallowed.
 
-### Sprint 3 implications (C1)
+### Guide implications
 
 - Add a prose note to `guide.md` explaining the 200-OK `<diagnostics>`
   envelope and that an error response can arrive as HTTP 200 with an empty
@@ -364,5 +363,5 @@ swallowed.
 ### Scope check
 
 Recheck surfaced **no new documented read-only endpoint** the guide missed;
-no `guide.md` operation changes from this recheck beyond the C1 prose note
-(scheduled for Sprint 3).
+no `guide.md` operation changes from this recheck beyond the diagnostics
+prose note (applied).

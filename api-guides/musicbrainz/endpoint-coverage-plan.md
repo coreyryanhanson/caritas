@@ -10,7 +10,7 @@
 > yet cover. The MusicBrainz API surface is large (13 core entities × 3 GET
 > operations each + non-MBID lookups); this plan nominates a **curated subset**
 > of endpoints most useful for a music-metadata research aide, following the
-> same principle as the `api.github.com` and Action API plans in Batch D.
+> same principle as the `api.github.com` and Action API plans.
 
 ## Status quo
 

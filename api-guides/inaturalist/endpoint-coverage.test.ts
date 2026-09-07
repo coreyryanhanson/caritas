@@ -1,7 +1,7 @@
 /**
  * iNaturalist recipe validity tests — endpoint coverage + live fetch sanity.
  *
- * This is the derived-id cursor proof recipe (P2-1 live proof): the cursor
+ * This is the derived-id cursor live proof: the cursor
  * value is the LAST ITEM's numeric `id` — resolved via the negative-index
  * path `results[-1].id` — fed back as the `id_above` query param. The
  * gatherAll walk asserts the cursor branch coerces the numeric id (~3.9×10⁸,
