@@ -84,6 +84,23 @@ exists so implementers know what to expect.
   hitting `/api/v1/*` will pass without special handling. Do NOT point tests
   at the HTML `/developers` page — that will hit the CAPTCHA wall.
 
+### `www.loc.gov`
+
+- **Observed:** 2026-09-07 during docs-link verification
+- **Symptom:** `curl` and `web-fetch` to the docs page
+  (`https://www.loc.gov/apis/json-and-yaml/working-within-limits/`) return
+  `HTTP 403` with a Cloudflare challenge page ("Just a moment...",
+  "Performing security verification").
+- **WAF layer:** Cloudflare bot-detection on the HTML site.
+- **Affected endpoints:** HTML docs pages (including the `docs:` URL in
+  `library-of-congress/guide.md`).
+- **Does NOT affect:** The JSON API endpoints (`https://www.loc.gov/<format>/...`).
+- **Workaround:** The docs link is valid — the 403 is bot-blocking, not a
+  dead URL. Verify in a real browser (`browser-navigate`) and click through
+  the Cloudflare check if needed.
+- **Risk to integration tests:** None for the API; only affects automated
+  fetching of the docs page itself.
+
 ## Template
 
 ```markdown

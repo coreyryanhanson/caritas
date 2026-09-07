@@ -118,19 +118,21 @@ describe("DNB SRU catalogue searches", () => {
 	);
 
 	itWhen(
-		"searchZdb with an indexed query surfaces the 200-OK diagnostics swallow (totalFetched 0)",
+		"searchZdb with an indexed query throws the 200-OK SRU diagnostic",
 		withTempDirs(DIR)(async ({ guidesDir }) => {
 			// C1 (design doc Workstream C): an indexed query ZDB rejects
 			// (info:srw/diagnostic/1/16) returns HTTP 200 with a <diagnostics>
-			// element and no <records>; itemsPath resolves to undefined and
-			// paginate yields items: [], totalFetched: 0 — indistinguishable
-			// from a genuine zero-results query. This assertion documents the
-			// swallowed-error case explicitly (recipe-level, no core change).
-			const result = (await fetchOp(guidesDir, "searchZdb", {
-				query: "Titel=Wasser",
-			})) as { items: unknown[]; totalFetched: number };
-			expect(result.items).toEqual([]);
-			expect(result.totalFetched).toBe(0);
+			// element and no <records>. Since errorPath
+			// (searchRetrieveResponse.diagnostics.diagnostic) landed, the
+			// envelope check fires before the itemsPath exhaustion break and
+			// the op throws a structured HelperError naming the diagnostic —
+			// no longer indistinguishable from a genuine zero-results query.
+			await expect(
+				fetchOp(guidesDir, "searchZdb", { query: "Titel=Wasser" }),
+			).rejects.toThrow(/Unsupported index/);
+			await expect(
+				fetchOp(guidesDir, "searchZdb", { query: "Titel=Wasser" }),
+			).rejects.toThrow(/info:srw\/diagnostic\/1\/16/);
 		}),
 		20_000,
 	);
@@ -190,6 +192,23 @@ describe("DNB OAI-PMH single verbs", () => {
 			})) as { data: { "OAI-PMH"?: { GetRecord?: { record?: unknown } } } };
 			expect(result.data).toBeTruthy();
 			expect(result.data["OAI-PMH"]?.GetRecord?.record).toBeTruthy();
+		}),
+		20_000,
+	);
+
+	itWhen(
+		"oaiGetRecord with an unknown identifier throws the OAI-PMH error element",
+		withTempDirs(DIR)(async ({ guidesDir }) => {
+			// idDoesNotExist rides the same 200 envelope as the SRU class:
+			// <OAI-PMH><error code="idDoesNotExist">…</error></OAI-PMH>.
+			// errorPath: OAI-PMH.error makes it a structured failure naming
+			// the code instead of data without a GetRecord element.
+			await expect(
+				fetchOp(guidesDir, "oaiGetRecord", {
+					identifier: "oai:dnb.de/authorities/BOGUS000000",
+					metadataPrefix: "MARC21-xml",
+				}),
+			).rejects.toThrow(/idDoesNotExist/);
 		}),
 		20_000,
 	);
