@@ -15,13 +15,14 @@ auth:
 responseShape:
   format: xml
   charset: utf-8
-verified: "2026-08-15"
+verified: "2026-09-07"
 docs: https://www.ncbi.nlm.nih.gov/books/NBK25499/
 operations:
   - name: esearch
     via: paginate
     path: /esearch.fcgi
     accept: xml
+    errorPath: eSearchResult.ERROR
     gatherAllMax: 1000
     pagination:
       style: offset-limit
@@ -80,6 +81,7 @@ operations:
     via: restGet
     path: /esearch.fcgi
     accept: xml
+    errorPath: eSearchResult.ERROR
     params:
       db:
         description: Entrez database. Defaults to pubmed.
@@ -115,6 +117,7 @@ operations:
     via: restGet
     path: /esummary.fcgi
     accept: xml
+    errorPath: eSummaryResult.ERROR
     params:
       db:
         description: Entrez database. Defaults to pubmed.
@@ -153,6 +156,7 @@ operations:
     via: restGet
     path: /efetch.fcgi
     accept: xml
+    errorPath: eFetchResult.ERROR
     params:
       db:
         description: Entrez database. Defaults to pubmed.
@@ -189,6 +193,7 @@ operations:
     via: restGet
     path: /elink.fcgi
     accept: xml
+    errorPath: eLinkResult.ERROR
     params:
       dbfrom:
         description: Database the input UIDs come from. Defaults to pubmed.
@@ -238,6 +243,7 @@ operations:
     via: restGet
     path: /einfo.fcgi
     accept: xml
+    errorPath: eInfoResult.ERROR
     params:
       db:
         description: >
@@ -346,7 +352,9 @@ per request — the whole body is returned.
 `GET /espell.fcgi?db=pubmed&term=<query>` checks a query for spelling variants
 and returns `eSpellResult.CorrectedQuery` plus a `SpelledQuery` diff. Paired
 with `esearch`: when a search returns few hits, run the raw term through
-`espell` to catch a misspelling before rewriting the query.
+`espell` to catch a misspelling before rewriting the query. Note: this op
+declares no `errorPath` — the body always carries an empty `<ERROR/>`
+element, success included (see "Error envelopes" below).
 
 ### `einfo` — Database/field metadata
 
@@ -364,6 +372,38 @@ citation matcher). The response is **plain text** (Content-Type
 `text/plain`), so this op declares `parse.format: text` for raw passthrough:
 one output line per input citation — the citation echoed back with the matched
 PMID appended (`…|key|PMID`). Unmatched citations come back with no PMID.
+
+## Error envelopes (HTTP 200 with an error body)
+
+E-utilities reports most errors as a root `<ERROR>` element inside an **HTTP
+200** XML envelope (`<eSearchResult><ERROR>Invalid db name specified:
+bogus</ERROR></eSearchResult>`), not an HTTP status. All XML ops except
+`espell` declare `errorPath` on their result root (`eSearchResult.ERROR`,
+`eSummaryResult.ERROR`, `eFetchResult.ERROR`, `eLinkResult.ERROR`,
+`eInfoResult.ERROR`), so these now throw a structured `HelperError` naming
+the server's message instead of returning the envelope as data (live-verified
+2026-09-07: bad `db` fires on every affected op; success bodies carry no
+`ERROR` element).
+
+- **`espell` declares no `errorPath`** — its response contains an **empty
+  `<ERROR/>` element on every call, success included** (live-verified
+  2026-09-07). Since `errorPath` is a presence test, declaring it would fire
+  on every success. A misspelled db yields a normal-looking result
+  (`Database` echoes the input, empty `CorrectedQuery`), not an error.
+- **`ecitmatch`** is plain-text passthrough (`parse.format: text`) — no
+  error envelope to declare.
+- **JSON mode** (`retmode=json`): the same errors surface as
+  `esearchresult.ERROR` / `esummaryresult.ERROR` under lowercase keys — the
+  XML `errorPath` above does not apply. `esearch` already documents that
+  `retmode=json` breaks its XML `itemsPath`; if you override `retmode` on
+  `esummary`/`efetch`/`elink`, the declared `errorPath` no longer matches and
+  errors come back as data.
+- **ESummary per-item errors** (JSON `result.<uid>.error` in JSON mode) are
+  a per-record condition inside a successful page, not a page-level envelope
+  — they arrive as data, not a throw.
+- **Rate-limit conditions** are expected to ride the body the same way (the
+  root `<ERROR>` shape), but this guide's declarations were verified against
+  parameter errors only — treat a rate-limit body as unverified until seen.
 
 ## Stateful two-step flow (History server) — A3
 
