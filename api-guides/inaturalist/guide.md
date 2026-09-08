@@ -151,11 +151,6 @@ operations:
         description: Restrict to a place id.
       taxon_id:
         description: Restrict to a taxon.
-    description: >
-      Observation counts bucketed by a time field. NOTE the response shape
-      differs from every list op: `results` is an OBJECT of
-      bucket-key → count (not an array), and there is no items array to
-      paginate.
   - name: listObservationSpeciesCounts
     via: paginate
     path: /v1/observations/species_counts
@@ -231,9 +226,6 @@ operations:
     via: paginate
     path: /v1/identifications/categories
     accept: json
-    description: >
-      The four identification categories (`leading`, `supporting`,
-      `improving`, `maverick`) with counts — tiny reference list.
   - name: listIdentificationIdentifiers
     via: paginate
     path: /v1/identifications/identifiers
@@ -533,10 +525,6 @@ operations:
     via: paginate
     path: /v1/controlled_terms
     accept: json
-    description: >
-      The site-wide annotation vocabulary (e.g. `Life Stage = Adult`,
-      `Sex = Female`) with the valid values for each term — the key to
-      reading annotation filters on observations. Tiny reference list.
   - name: listTaxonControlledTerms
     via: paginate
     path: /v1/controlled_terms/for_taxon

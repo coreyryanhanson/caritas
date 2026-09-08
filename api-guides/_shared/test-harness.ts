@@ -116,10 +116,15 @@ export function createFetchOp(
 			? paginate(match.guide.apiHost, op, params, match.guide, {
 					transformFn: passTransform,
 					dirName: match.dirName,
+					// Live tier is always fresh — a module-level transport cache
+					// could otherwise feed this test a ≤60s-stale body warmed by
+					// an earlier test in the same vitest process.
+					fresh: true,
 				})
 			: restGet(match.guide.apiHost, op, params, match.guide, {
 					transformFn: passTransform,
 					dirName: match.dirName,
+					fresh: true,
 				});
 	};
 }
@@ -161,6 +166,10 @@ export function createResolveOpFn(
 		const op = match.guide.operations.find((o) => o.name === name)!;
 		const res = await resolveOpForExecution(match.guide, op, match.dirName, {
 			userParams: params,
+			// Never validate a live recipe against a cached body — the module-level
+			// transport cache could otherwise feed this test a ≤60s-stale body
+			// warmed by an earlier test in the same vitest process.
+			fresh: true,
 		});
 		if (!res.ok) {
 			// The structured failure payload: which secrets the store lacks for
