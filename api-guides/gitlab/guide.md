@@ -1,6 +1,6 @@
 ---
 kind: api
-schemaVersion: 0
+schemaVersion: 1
 domains:
   - gitlab.com
 shortName: GitLab
@@ -9,11 +9,10 @@ apiHost: https://gitlab.com
 auth:
   kind: static-key
   secretRefs:
-    Authorization: api_key
-  headerPrefixes:
-    Authorization: "Bearer "
-  optional:
-    - api_key
+    Authorization:
+      secret: api_key
+      prefix: "Bearer "
+      optional: true
 responseShape:
   format: json
   charset: utf-8
@@ -88,7 +87,8 @@ operations:
         description: opened | closed | all.
         default: all
       labels:
-        description: Comma-separated label names to filter by.
+        description: Comma-separated label names to filter by. Accepts a single value or an array (joined with commas).
+        listStyle: comma
       search:
         description: Search issues for the given text.
       scope:
@@ -164,15 +164,16 @@ on GitLab.com** — 403 Forbidden anonymously). Root of all paths is `/api/v4`.
 
 ## Auth
 
-`Authorization: Bearer <PAT>` header, **optional** (`auth.optional`):
+`Authorization: Bearer <PAT>` header, **optional** (`secretRefs` entry with
+`optional: true`):
 10 requests/min unauthenticated → 60/min with a PAT. Provision the PAT once:
 
 ```sh
 /api secrets gitlab.com api_key "<raw PAT>"
 ```
 
-The store holds the **raw token**; the guide declares that it is presented as
-`Bearer <token>` (`headerPrefixes`), so a bare token is accepted and a stored
+The store holds the **raw token**; the guide's `secretRefs` entry declares
+`prefix: "Bearer "`, so a bare token is accepted and a stored
 `Bearer` prefix should **not** be added. When absent, calls proceed
 unauthenticated with the
 `auth: ok (optional … not provisioned)` footer; when present, **every op** gets

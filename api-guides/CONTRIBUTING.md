@@ -5,6 +5,12 @@
 > for no-auth guides — read it first, then copy its pattern. For a **keyed**
 > guide (`auth.kind: static-key`), start from a keyed recipe instead — see
 > [Authoring a keyed guide](#authoring-a-keyed-guide-static-key-auth).
+>
+> The guide **schema itself** — every frontmatter field, pagination style,
+> response shape, auth shape, and helper contract — is documented once in
+> pi-lean-host's [docs/authoring.md](https://github.com/coreyryanhanson/pi-lean-dimension/blob/main/packages/pi-lean-host/docs/authoring.md).
+> This file covers what contributing to the *library* adds on top: directory
+> layout, tests, and provenance. Don't duplicate schema detail here.
 
 ## Directory layout
 
@@ -63,11 +69,10 @@ recipe surface couldn't. The decision criteria live in
   [`api-helper-escape-valve.md`](https://github.com/coreyryanhanson/pi-lean-dimension/blob/main/packages/pi-lean-host/docs/design/api-helper-escape-valve.md);
 read it before adding another.
 
-Transform contract: `(data, ctx) => unknown`, declared via `transform: true`
-on the op in `guide.md`. Loaded by `loadTransform`, invoked by the
-`restGet` (whole-body) or `paginate` (per-item) hookpoint. A throw falls
-back to the raw body/item with a warning — graceful, never disables the op.
-Pure function, no default export.
+The `transform` contract (`(data, ctx) => unknown`, declared via
+`transform: true` on the op in `guide.md`, graceful throw → raw data with a
+warning, pure function, no default export) is specified in
+[docs/authoring.md](https://github.com/coreyryanhanson/pi-lean-dimension/blob/main/packages/pi-lean-host/docs/authoring.md#local-user-helpers).
 
 ## Authoring a keyed guide (static-key auth)
 
@@ -82,42 +87,28 @@ The guide **declares the secret by name**; the value never lives in the guide.
 `/api secrets`) and injects it in code — a real key committed to the recipe
 would be one `cat` from the agent's context.
 
-```yaml
-auth:
-  kind: static-key
-  secretRefs:                  # or secretQueryRefs: for ?key= style
-    x-cg-demo-api-key: api_key # headerName: secretName
-  # headerPrefixes:            # headerName → prefix added for scheme-style
-  #   Authorization: "Bearer "  #   headers (e.g. GitHub/GitLab) — the store
-  #                             #   holds the RAW token; the guide adds the prefix
-  requires: [api_key]          # ─ or optional if the API works unauthenticated
-```
+The full guide-side YAML (`secretRefs` / `secretQueryRefs`, `prefix`,
+`optional`) and the parser-enforced invariants (fail-closed required refs,
+query-ref/params collisions, per-grant `oauth2` field rules) live in
+[docs/authoring.md](https://github.com/coreyryanhanson/pi-lean-dimension/blob/main/packages/pi-lean-host/docs/authoring.md#static-key-auth-in-the-guide) —
+that is the canonical schema reference; keep it that way rather than
+re-copying YAML here.
 
-**Rule of thumb:** the store holds the **raw credential**; the guide declares
-how it is presented. For scheme-prefixed headers (`Authorization: Bearer …`)
-declare `headerPrefixes` so provisioning pastes the raw token — never smuggle
-the `Bearer` prefix into the stored value.
-
-**Parser-enforced** (every failure carries a `fix:` hint — a bad guide fails
-at parse time, not fetch time):
-
-- `secretRefs` / `secretQueryRefs` are rejected on `auth.kind: none`.
-- Every ref name must be declared in `requires` ∪ `optional`; a name in
-  **both** is an error.
-- Each `headerPrefixes` key must also be a `secretRefs` header; empty prefix
-  strings and `headerPrefixes` on `auth.kind: none` are rejected.
-- A `secretQueryRefs` param name that also appears in any operation's `params`
-  map is an error — the agent must not be able to set a code-injected param.
-- `auth.kind: oauth2` is rejected at parse ("not yet implemented").
-
-**Keyed-guide tests** follow the `github/endpoint-coverage.test.ts`
-pattern: parse/recipe assertions run always; live calls resolve the key via
-`resolveSecretHeaders` / `resolveSecretQueryParams` from `core/auth.js` and
-are `HOST_INTEGRATION=1`-gated. Framework structural tests inject a temp store
+**Keyed-guide tests** follow the
+`etherscan`/`coingecko`/`telegram-bot-api` `endpoint-coverage.test.ts`
+pattern: parse/recipe assertions run always; live calls ride the canonical
+resolve-op pipeline via `createResolveOpFn` from `../_shared/test-harness.js`
+(auth resolution, helper dispatch and transform wiring happen inside the
+pipeline — don't re-implement them per-file) and are
+`HOST_INTEGRATION=1`-gated. Hold the raw secret via a per-file `rawKey()`-style
+helper only for `not.toContain` negative assertions. Framework structural
+tests inject a temp store
 via `setSecretsDir` (`__tests__/auth.test.ts`) — use that seam for a keyed
 guide's pure assertions and assert the output-channel invariants too: a
-missing `requires` secret fails closed **before** the request, a missing
-`optional` proceeds unauthenticated, and no secret value ever appears in
+missing required ref (no `optional: true`) fails closed **before** the
+request (surfacing as `auth_required_not_provisioned` naming the secret), a
+missing `optional` ref proceeds unauthenticated, and no secret
+value ever appears in
 `result.url`, `details.params`, the 401 body, or `details.headers` (names +
 redaction on every surfaced channel).
 
@@ -144,10 +135,11 @@ coupling.
 **Keep per-file, do not share:**
 
 - A per-file `fetchOp` **wrapper** when a domain needs pacing, 503-retry,
-  auth overlay, or similar (e.g. `openlibrary.org` 400ms pacing,
+  or similar (e.g. `openlibrary.org` 400ms pacing,
   `musicbrainz.org`/`api.gbif.org` 503-retry). Compose it around
   `createFetchOp`. The wrapper encodes domain-specific shape and cannot
-  be shared.
+  be shared. Auth resolution is shared, not per-file: keyed guides run
+  live ops through `createResolveOpFn`.
 - The per-op assertions. These encode domain-specific response shape
   (`restGet` vs `paginate`, `itemsPath`, rate limits) and cannot be
   shared.

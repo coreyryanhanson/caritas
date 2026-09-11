@@ -64,7 +64,7 @@ describe("MusicBrainz live integration smoke", () => {
 		"parses and loads the recipe with all 37 ops",
 		withTempDirs("musicbrainz")(async ({ guidesDir }) => {
 			const { loadApiGuidesFromDir } = await import(
-				"pi-lean-host/core/parse-api-guide.js"
+				"pi-lean-host/core/guide-catalog.js"
 			);
 			const loaded = loadApiGuidesFromDir(guidesDir);
 			expect(Object.keys(loaded.guides)).toContain("musicbrainz");

@@ -1,6 +1,6 @@
 ---
 kind: api
-schemaVersion: 0
+schemaVersion: 1
 domains:
   - dnb.de
 shortName: Deutsche Nationalbibliothek
@@ -11,13 +11,14 @@ auth:
 responseShape:
   format: xml
   charset: utf-8
-verified: "2026-07-18"
+verified: "2026-09-07"
 docs: https://www.dnb.de/EN/Professionell/Metadatendienste/Datenbezug/SRU/sru_node.html
 operations:
   - name: searchZdb
     via: paginate
     path: /sru/zdb
     accept: xml
+    errorPath: searchRetrieveResponse.diagnostics.diagnostic
     pagination:
       style: offset-limit
       itemsPath: searchRetrieveResponse.records.record
@@ -45,6 +46,7 @@ operations:
     via: paginate
     path: /sru/dnb
     accept: xml
+    errorPath: searchRetrieveResponse.diagnostics.diagnostic
     pagination:
       style: offset-limit
       itemsPath: searchRetrieveResponse.records.record
@@ -70,6 +72,7 @@ operations:
     via: paginate
     path: /sru/dnb.dma
     accept: xml
+    errorPath: searchRetrieveResponse.diagnostics.diagnostic
     pagination:
       style: offset-limit
       itemsPath: searchRetrieveResponse.records.record
@@ -95,6 +98,7 @@ operations:
     via: paginate
     path: /sru/authorities
     accept: xml
+    errorPath: searchRetrieveResponse.diagnostics.diagnostic
     pagination:
       style: offset-limit
       itemsPath: searchRetrieveResponse.records.record
@@ -125,6 +129,7 @@ operations:
     via: paginate
     path: /oai/repository
     accept: xml
+    errorPath: OAI-PMH.error
     pagination:
       style: resumptionToken
       itemsPath: OAI-PMH.ListRecords.record
@@ -148,6 +153,7 @@ operations:
     via: paginate
     path: /oai/repository
     accept: xml
+    errorPath: OAI-PMH.error
     pagination:
       style: resumptionToken
       itemsPath: OAI-PMH.ListIdentifiers.header
@@ -171,6 +177,7 @@ operations:
     via: restGet
     path: /oai/repository
     accept: xml
+    errorPath: OAI-PMH.error
     params:
       verb:
         description: OAI-PMH verb.
@@ -179,6 +186,7 @@ operations:
     via: restGet
     path: /oai/repository
     accept: xml
+    errorPath: OAI-PMH.error
     params:
       verb:
         description: OAI-PMH verb.
@@ -187,6 +195,7 @@ operations:
     via: restGet
     path: /oai/repository
     accept: xml
+    errorPath: OAI-PMH.error
     params:
       verb:
         description: OAI-PMH verb.
@@ -195,6 +204,7 @@ operations:
     via: restGet
     path: /oai/repository
     accept: xml
+    errorPath: OAI-PMH.error
     params:
       verb:
         description: OAI-PMH verb.
@@ -262,8 +272,10 @@ requires that a `resumptionToken` be the only argument besides `verb` on
 subsequent requests. The current paginator sends all original params
 (`metadataPrefix`, `from`, `until`, `set`) plus the token on every page.
 Some OAI-PMH servers reject requests that include extra arguments with a
-`badResumptionToken` error. If DNB enforces this strictly, a paginator
-enhancement to drop non-`verb` params on resume is needed. The token itself
+`badResumptionToken` error — that error now fails the op loudly via
+`errorPath: OAI-PMH.error` (a `badResumptionToken` mid-walk throws,
+losing partial items — same fail-loud posture as HTTP-status errors).
+The token itself
 encodes all harvest state, so the extra params are redundant but not
 harmless on strict servers.
 
@@ -272,19 +284,20 @@ harmless on strict servers.
 - **Bare CQL term required:** the ZDB catalog rejects indexed queries
   (`Titel=Test`, `dnb.ti=Wasser`) with SRU diagnostic
   `info:srw/diagnostic/1/16` ("Unsupported index"). Use a bare term
-  (`query=Wasser`). Verified 2026-07-18.
-- **200-OK `<diagnostics>` envelope (verified live 2026-08-10):** SRU
+  (`query=Wasser`). Verified 2026-07-18. The diagnostic now fails the op
+  loudly via `errorPath` (see below) instead of reading as zero results.
+- **200-OK `<diagnostics>` envelope (verified live 2026-09-07):** SRU
   errors arrive as **HTTP 200 with a `<diagnostics>` element and no
-  `<records>`** — *not* a non-2xx status. Because `itemsPath`
-  (`searchRetrieveResponse.records.record`) then resolves to `undefined`,
-  the search returns `items: [], totalFetched: 0` — **indistinguishable
-  from a genuine zero-results query**, so the diagnostic is silently
-  swallowed. An empty result set against these endpoints may mean a real
-  `no hits`, or an indexed/unsupported query the catalogue rejected. If a
-  search legitimately expected hits and returns empty, re-check the CQL
-  for an indexed term (→ the `1/16` diagnostic above) — the docs document
-  this envelope at "What happens if a parameter in the URL request is
-  incorrect or not supported?"
+  `<records>`** — *not* a non-2xx status. The ops declare
+  `errorPath: searchRetrieveResponse.diagnostics.diagnostic`, so a
+  diagnostic page now throws a structured error carrying the diagnostic
+  object (e.g. `{"uri":"info:srw/diagnostic/1/16","details":"Unsupported
+  index","message":"Titel"}`) instead of silently returning
+  `items: []`. An empty result set
+  against these endpoints therefore means a genuine `no hits`; an
+  indexed/unsupported CQL term fails with the `1/16` diagnostic
+  (→ use a bare term). The docs document this envelope at "What happens
+  if a parameter in the URL request is incorrect or not supported?"
 - **Charset is UTF-8** (not non-UTF-8). The axis-B criterion is "XML **and/or**
   non-UTF-8"; DNB covers the XML half. The transport's charset-decoding path is
   still exercised because every response carries `Content-Type: text/xml;

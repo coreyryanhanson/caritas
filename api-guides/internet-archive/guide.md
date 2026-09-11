@@ -1,6 +1,6 @@
 ---
 kind: api
-schemaVersion: 0
+schemaVersion: 1
 organization: archive.org
 description: Item metadata records and full-corpus Solr search on archive.org.
 domains:
@@ -52,7 +52,8 @@ operations:
       q:
         description: Solr query string. Supports field queries like `collection:opensource`.
       fl:
-        description: "Comma-separated field list. Common fields: identifier, title, description, creator, date, mediatype, collection, downloads."
+        description: "Comma-separated field list. Common fields: identifier, title, description, creator, date, mediatype, collection, downloads. Accepts a single value or an array (joined with commas)."
+        listStyle: comma
       output:
         description: Response format. Must be `json` to get the Solr JSON envelope (the API returns an HTML page otherwise).
         default: json

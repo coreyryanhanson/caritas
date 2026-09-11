@@ -49,7 +49,9 @@ describe("all caritas recipes parse against pi-lean-host", () => {
 
 			expect(result.guide.apiHost).toBeTruthy();
 			expect(result.guide.operations.length).toBeGreaterThan(0);
-			expect(["none", "static-key"]).toContain(result.guide.auth.kind);
+			expect(["none", "static-key", "oauth2"]).toContain(
+				result.guide.auth.kind,
+			);
 			for (const op of result.guide.operations) {
 				expect(["restGet", "paginate"]).toContain(op.via);
 				expect(op.path).toMatch(/^\//);

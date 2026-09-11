@@ -33,13 +33,13 @@ vi.mock("pi-lean-host/core/transport.js", async () => ({
 }));
 
 import type { ApiGuide, Operation } from "pi-lean-host/core/api-guide-types.js";
+import { loadApiGuidesFromDir } from "pi-lean-host/core/guide-catalog.js";
 import {
 	invalidateCache,
 	setUserGuidesDir,
 } from "pi-lean-host/core/guide-store.js";
 import { restGet } from "pi-lean-host/core/helpers.js";
 import { loadTransform } from "pi-lean-host/core/local-helpers.js";
-import { loadApiGuidesFromDir } from "pi-lean-host/core/parse-api-guide.js";
 import { transform } from "./helper.js";
 
 // ── Fixtures — the CDX output=json array-of-arrays (header + rows) ─────
@@ -200,9 +200,10 @@ describe("queryCdx transform through the real pipeline (mocked transport)", () =
 			op,
 			{ url: "example.com" },
 			guide,
-			undefined,
-			transformFn ?? undefined,
-			"wayback-cdx-server",
+			{
+				transformFn: transformFn ?? undefined,
+				dirName: "wayback-cdx-server",
+			},
 		);
 
 		expect(Array.isArray(result.data)).toBe(true);
@@ -233,9 +234,10 @@ describe("queryCdx transform through the real pipeline (mocked transport)", () =
 			op,
 			{ url: "example.com" },
 			guide,
-			undefined,
-			throwing,
-			"wayback-cdx-server",
+			{
+				transformFn: throwing,
+				dirName: "wayback-cdx-server",
+			},
 		);
 
 		// Raw array-of-arrays preserved with the warning; op not disabled.

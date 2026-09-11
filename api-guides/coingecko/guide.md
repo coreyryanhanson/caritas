@@ -1,6 +1,6 @@
 ---
 kind: api
-schemaVersion: 0
+schemaVersion: 1
 domains:
   - coingecko.com
 shortName: CoinGecko
@@ -11,9 +11,8 @@ apiHost: https://api.coingecko.com/api/v3
 auth:
   kind: static-key
   secretRefs:
-    x-cg-demo-api-key: api_key
-  requires:
-    - api_key
+    x-cg-demo-api-key:
+      secret: api_key
 responseShape:
   format: json
   charset: utf-8
@@ -39,7 +38,8 @@ operations:
         default: market_cap_desc
         description: Sort order — market_cap_desc (default), market_cap_asc, volume_desc, gecko_desc, id_asc.
       price_change_percentage:
-        description: Comma-separated time ranges for a % price-change field, e.g. "1h,24h,7d".
+        description: Comma-separated time ranges for a % price-change field, e.g. "1h,24h,7d". Accepts a single value or an array (joined with commas).
+        listStyle: comma
       page:
         description: Page through results (1-based).
 
@@ -83,7 +83,8 @@ operations:
       page:
         description: Page through results (100 tickers per page).
       exchange_ids:
-        description: Comma-separated exchange IDs to filter tickers (from /exchanges/list).
+        description: Comma-separated exchange IDs to filter tickers (from /exchanges/list). Accepts a single value or an array (joined with commas).
+        listStyle: comma
       include_exchange_logo:
         default: false
         description: Include exchange logos in the response.
@@ -220,15 +221,19 @@ operations:
     params:
       ids:
         default: bitcoin
-        description: Coin IDs, comma-separated (or names/symbols via the other lookups).
+        description: Coin IDs, comma-separated (or names/symbols via the other lookups). Accepts a single value or an array (joined with commas).
+        listStyle: comma
       names:
-        description: Coin names, comma-separated (alternative to ids).
+        description: Coin names, comma-separated (alternative to ids). Accepts a single value or an array (joined with commas).
+        listStyle: comma
       symbols:
-        description: Coin symbols, comma-separated (alternative to ids).
+        description: Coin symbols, comma-separated (alternative to ids). Accepts a single value or an array (joined with commas).
+        listStyle: comma
       vs_currencies:
         required: true
         default: usd
-        description: Target currencies, comma-separated (from /simple/supported_vs_currencies).
+        description: Target currencies, comma-separated (from /simple/supported_vs_currencies). Accepts a single value or an array (joined with commas).
+        listStyle: comma
       include_market_cap:
         default: false
         description: Include market capitalization in the result.
@@ -253,11 +258,13 @@ operations:
         description: Asset platform ID (e.g. ethereum). Passed as a path token.
       contract_addresses:
         required: true
-        description: Token contract addresses, comma-separated (max 515 per request).
+        description: Token contract addresses, comma-separated (max 515 per request). Accepts a single value or an array (joined with commas).
+        listStyle: comma
       vs_currencies:
         required: true
         default: usd
-        description: Target currencies, comma-separated.
+        description: Target currencies, comma-separated. Accepts a single value or an array (joined with commas).
+        listStyle: comma
       include_market_cap:
         default: false
       include_24hr_vol:
@@ -379,7 +386,8 @@ operations:
       id:
         description: The exchange's id (e.g. binance). Passed as a path token.
       coin_ids:
-        description: Filter tickers by coin IDs, comma-separated (from /coins/list).
+        description: Filter tickers by coin IDs, comma-separated (from /coins/list). Accepts a single value or an array (joined with commas).
+        listStyle: comma
       page:
         description: Page through results (100 tickers per page).
       depth:
@@ -514,9 +522,11 @@ operations:
       entity_id:
         description: "Entity ID (e.g. strategy) — from getEntitiesList. Passed as a path token."
       holding_amount_change:
-        description: "Include holding amount change — comma-separated timeframes: 7d, 14d, 30d, 90d, 1y, ytd."
+        description: "Include holding amount change — comma-separated timeframes: 7d, 14d, 30d, 90d, 1y, ytd. Accepts a single value or an array (joined with commas)."
+        listStyle: comma
       holding_change_percentage:
-        description: "Include holding change % — comma-separated timeframes: 7d, 14d, 30d, 90d, 1y, ytd."
+        description: "Include holding change % — comma-separated timeframes: 7d, 14d, 30d, 90d, 1y, ytd. Accepts a single value or an array (joined with commas)."
+        listStyle: comma
 
   - name: getTreasuryHoldingChart
     via: restGet
@@ -543,7 +553,8 @@ operations:
       entity_id:
         description: "Entity ID (e.g. strategy) — from getEntitiesList. Passed as a path token."
       coin_ids:
-        description: "Filter by coin IDs, comma-separated (from getCoinList)."
+        description: "Filter by coin IDs, comma-separated (from getCoinList). Accepts a single value or an array (joined with commas)."
+        listStyle: comma
       per_page:
         default: 100
         description: Results per page.

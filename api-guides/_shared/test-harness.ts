@@ -6,9 +6,15 @@
  * This is the part that is byte-for-byte identical across every guide's
  * tests; it never touches any API.
  *
+ * Layer 1.5 — the keyed-guide resolve-op seam: `createResolveOpFn` runs one
+ * op through the canonical `resolveOpForExecution` pipeline (the exact path
+ * api-fetch and /api verify ride), so keyed guides' live tests stop
+ * re-implementing the auth-resolution sequence per-file.
+ *
  * Layer 2 — the `fetchOp` wrapper + per-op assertions — stays per-file. The
- * wrapper encodes domain-specific shape (delay, 503-retry, auth overlay) and
- * cannot be shared. But the bare bootstrap (load recipe, dispatch on `via`) is
+ * wrapper encodes domain-specific shape (delay, 503-retry) and
+ * cannot be shared. Auth resolution is not per-file: keyed guides ride the
+ * `createResolveOpFn` pipeline above. But the bare bootstrap (load recipe, dispatch on `via`) is
  * generic and lives here as `createFetchOp`; per-file wrappers compose around it.
  *
  * Not under `core/`: this is peer test plumbing, not framework code. A guide
@@ -28,6 +34,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { ApiGuide, Operation } from "pi-lean-host/core/api-guide-types.js";
 import type { TransformFn } from "pi-lean-host/core/local-helpers.js";
 import { it } from "vitest";
 
@@ -106,48 +113,149 @@ export function createFetchOp(
 		}
 		const passTransform = transformFn ?? undefined;
 		return op.via === "paginate"
-			? paginate(
-					match.guide.apiHost,
-					op,
-					params,
-					match.guide,
-					undefined,
-					passTransform,
-					match.dirName,
-				)
-			: restGet(
-					match.guide.apiHost,
-					op,
-					params,
-					match.guide,
-					undefined,
-					passTransform,
-					match.dirName,
-				);
+			? paginate(match.guide.apiHost, op, params, match.guide, {
+					transformFn: passTransform,
+					dirName: match.dirName,
+					// Live tier is always fresh — a module-level transport cache
+					// could otherwise feed this test a ≤60s-stale body warmed by
+					// an earlier test in the same vitest process.
+					fresh: true,
+				})
+			: restGet(match.guide.apiHost, op, params, match.guide, {
+					transformFn: passTransform,
+					dirName: match.dirName,
+					fresh: true,
+				});
+	};
+}
+
+/**
+ * Run one op through the canonical resolve-op pipeline (the exact path
+ * api-fetch and /api verify ride): load the guide by domain, resolve the op
+ * by name across all matches, execute — auth resolution, helper dispatch and
+ * transform wiring all happen inside the pipeline, so per-guide copies of
+ * that sequence go away. Throws on every failure mode — pipeline rejection
+ * (helper_disabled / auth_required_not_provisioned / oauth_token_missing)
+ * and executor throw (HTTP >= 400 HelperError) alike — so the live tier's
+ * happy path stays single-expression. Callers wanting the failure envelope
+ * catch around this helper.
+ */
+export function createResolveOpFn(
+	domain: string,
+): (
+	guidesDir: string,
+	name: string,
+	params?: Record<string, unknown>,
+) => Promise<unknown> {
+	return async (guidesDir, name, params = {}) => {
+		const { setUserGuidesDir, findGuidesByDomain } = await import(
+			"pi-lean-host/core/guide-store.js"
+		);
+		const { resolveOpForExecution } = await import(
+			"pi-lean-host/core/resolve-op.js"
+		);
+		setUserGuidesDir(guidesDir);
+		// Resolve like the real api-fetch tool: every guide claiming `domain`,
+		// then the op by name across all matches (multi-recipe safe). Explicit
+		// throw instead of `!` so a typo'd op name reads as a message, not a
+		// context-free undefined deref.
+		const match = findGuidesByDomain(domain).find(({ guide }) =>
+			guide.operations.some((o) => o.name === name),
+		);
+		if (!match) throw new Error(`op ${name} not found for ${domain}`);
+		const op = match.guide.operations.find((o) => o.name === name)!;
+		const res = await resolveOpForExecution(match.guide, op, match.dirName, {
+			userParams: params,
+			// Never validate a live recipe against a cached body — the module-level
+			// transport cache could otherwise feed this test a ≤60s-stale body
+			// warmed by an earlier test in the same vitest process.
+			fresh: true,
+		});
+		if (!res.ok) {
+			// The structured failure payload: which secrets the store lacks for
+			// auth_required_not_provisioned, the human-readable nudge otherwise.
+			const detail =
+				res.reason === "auth_required_not_provisioned"
+					? res.missing.join(", ")
+					: res.message;
+			throw new Error(`${name}: pipeline rejected — ${res.reason}: ${detail}`);
+		}
+		return res.result;
 	};
 }
 
 /**
  * Wrap a test body in temp-dir setup/teardown. Pass the domains to copy in.
- * Returns a zero-arg async fn suitable for `it(..., harness("boletin-oficial-del-estado")(async ({ guidesDir }) => { ... }))`.
+ * Returns a fn suitable for `it(..., harness("boletin-oficial-del-estado")(async ({ guidesDir }) => { ... }))`.
+ * Vitest's test context (e.g. for `ctx.skip()` inside chain tests) is
+ * forwarded as the second argument when the harness runs the body.
  *
  * No-op (returns immediately) when `HOST_INTEGRATION !== "1"`, so bare CI
  * skips the live path without touching the filesystem.
  */
 export function withTempDirs(
 	...domainsToCopy: string[]
-): (fn: (dirs: TempDirs) => Promise<void>) => () => Promise<void> {
+): (
+	fn: (
+		dirs: TempDirs,
+		ctx?: { skip: (note?: string) => void },
+	) => Promise<void>,
+) => (...args: unknown[]) => Promise<void> {
 	const HOST_INTEGRATION = process.env["HOST_INTEGRATION"] === "1";
-	return (fn: (dirs: TempDirs) => Promise<void>) => {
-		return async () => {
+	return (fn) => {
+		return async (...args: unknown[]) => {
 			if (!HOST_INTEGRATION) return;
 			const guidesDir = mkdtempSync(join(tmpdir(), "pi-host-smoke-guides-"));
 			try {
 				copyDomains(guidesDir, ...domainsToCopy);
-				await fn({ guidesDir });
+				await (fn as (...a: unknown[]) => Promise<void>)(
+					{ guidesDir },
+					...args,
+				);
 			} finally {
 				rmSync(guidesDir, { recursive: true, force: true });
 			}
 		};
+	};
+}
+
+/**
+ * Mocked-recipe harness (bare-CI tier). `withTempDirs` above is
+ * HOST_INTEGRATION-gated, so mocked-transport tests can't use it — this is
+ * its bare-CI twin: copy a real recipe folder into a throwaway guides dir
+ * and load it through the real parser, so a wire-form test always
+ * exercises the shipped guide.md (the fixture can't drift). Pass the
+ * returned `cleanup` to `afterAll`. Global guide-store state
+ * (`setUserGuidesDir` + `invalidateCache`) is set per load, matching the
+ * `createFetchOp` seam.
+ */
+export function setupMockedRecipe(domain: string): {
+	load: (opName: string) => Promise<{ op: Operation; guide: ApiGuide }>;
+	cleanup: () => void;
+} {
+	const guidesDir = mkdtempSync(join(tmpdir(), "pi-host-mocked-recipe-"));
+	copyDomains(guidesDir, domain);
+	return {
+		load: async (opName) => {
+			const { invalidateCache, setUserGuidesDir } = await import(
+				"pi-lean-host/core/guide-store.js"
+			);
+			const { loadApiGuidesFromDir } = await import(
+				"pi-lean-host/core/guide-catalog.js"
+			);
+			setUserGuidesDir(guidesDir);
+			invalidateCache();
+			const loaded = loadApiGuidesFromDir(guidesDir);
+			const guide = loaded.guides[domain];
+			if (!guide) {
+				throw new Error(
+					`recipe not found: ${domain} (${loaded.malformed.length} malformed)`,
+				);
+			}
+			const op = guide.operations.find((o) => o.name === opName);
+			if (!op) throw new Error(`op ${opName} not found in ${domain}`);
+			return { op, guide };
+		},
+		cleanup: () => rmSync(guidesDir, { recursive: true, force: true }),
 	};
 }

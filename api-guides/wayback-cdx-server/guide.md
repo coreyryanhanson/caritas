@@ -1,6 +1,6 @@
 ---
 kind: api
-schemaVersion: 0
+schemaVersion: 1
 organization: archive.org
 description: "Wayback capture history: CDX index queries and Memento time-travel lookups."
 domains:
@@ -45,7 +45,8 @@ operations:
       fl:
         description: Comma-separated subset of fields to return (urlkey,timestamp,original,mimetype,statuscode,digest,length default).
       filter:
-        description: Repeatable `[!]field:regex` filter, e.g. `filter=!statuscode:200`. Pass one filter per call; the API accepts repeats.
+        description: Repeatable `[!]field:regex` filter, e.g. `filter=!statuscode:200`. Pass an array for multiple filters (serializes as repeated `filter=` pairs).
+        listStyle: repeat
       collapse:
         description: Repeatable `field[:N]` de-dupe of adjacent captures, e.g. `collapse=timestamp:10` (1 per hour) or `collapse=digest`.
 

@@ -34,13 +34,13 @@ vi.mock("pi-lean-host/core/transport.js", async () => ({
 }));
 
 import type { ApiGuide, Operation } from "pi-lean-host/core/api-guide-types.js";
+import { loadApiGuidesFromDir } from "pi-lean-host/core/guide-catalog.js";
 import {
 	invalidateCache,
 	setUserGuidesDir,
 } from "pi-lean-host/core/guide-store.js";
 import { restGet } from "pi-lean-host/core/helpers.js";
 import { loadTransform } from "pi-lean-host/core/local-helpers.js";
-import { loadApiGuidesFromDir } from "pi-lean-host/core/parse-api-guide.js";
 import { transform } from "./helper.js";
 
 // ── Fixture — the opensearch bare positional array ────────────────────
@@ -180,9 +180,10 @@ describe("openSearch transform through the real pipeline (mocked transport)", ()
 			op,
 			{ search: "solar eclipse" },
 			guide,
-			undefined,
-			transformFn ?? undefined,
-			"wikimedia-action",
+			{
+				transformFn: transformFn ?? undefined,
+				dirName: "wikimedia-action",
+			},
 		);
 
 		expect(Array.isArray(result.data)).toBe(true);
@@ -213,9 +214,10 @@ describe("openSearch transform through the real pipeline (mocked transport)", ()
 			op,
 			{ search: "solar eclipse" },
 			guide,
-			undefined,
-			throwing,
-			"wikimedia-action",
+			{
+				transformFn: throwing,
+				dirName: "wikimedia-action",
+			},
 		);
 
 		// Raw array preserved with the warning; op not disabled.

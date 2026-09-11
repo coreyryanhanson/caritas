@@ -402,7 +402,7 @@ reCAPTCHA wall (see `../WAF-NOTES.md`).
 
 ## Implementation notes
 
-Rollout Batch B (#6) implemented 2026-08-06. All 14 ops shipped (13 new +
+Rollout (#6) implemented 2026-08-06. All 14 ops shipped (13 new +
 existing `listDocuments`), live gate green (`HOST_INTEGRATION=1` 15/15), bare
 CI green. Deviations from the frozen plan:
 

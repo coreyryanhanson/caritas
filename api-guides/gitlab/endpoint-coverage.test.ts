@@ -101,7 +101,7 @@ describe("GitLab live integration smoke", () => {
 		"parses and loads the GitLab recipe from a temp user dir",
 		withTempDirs("gitlab")(async ({ guidesDir }) => {
 			const { loadApiGuidesFromDir } = await import(
-				"pi-lean-host/core/parse-api-guide.js"
+				"pi-lean-host/core/guide-catalog.js"
 			);
 			const loaded = loadApiGuidesFromDir(guidesDir);
 			expect(Object.keys(loaded.guides)).toContain("gitlab");
@@ -110,9 +110,9 @@ describe("GitLab live integration smoke", () => {
 			const guide = loaded.guides["gitlab"]!;
 			expect(guide.apiHost).toBe("https://gitlab.com");
 			expect(guide.auth.kind).toBe("static-key");
-			expect(guide.auth.secretRefs).toEqual({ Authorization: "api_key" });
-			expect(guide.auth.optional).toEqual(["api_key"]);
-			expect(guide.auth.requires).toBeUndefined();
+			expect(guide.auth.secretRefs).toEqual({
+				Authorization: { secret: "api_key", prefix: "Bearer ", optional: true },
+			});
 			for (const op of guide.operations) {
 				expect(op.params["Authorization"]).toBeUndefined();
 			}

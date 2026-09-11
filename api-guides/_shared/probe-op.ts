@@ -1,6 +1,10 @@
 /**
- * Interactive op probe — exercise a live operation through the REAL executor
- * (`restGet` / `paginate` from `core/helpers.js`) without writing a guide.
+ * Interactive op probe — exercise a live operation through the REAL shared
+ * execution sequence (`resolveOpForExecution` from `core/resolve-op.js` —
+ * the same guide→helper→transform→auth→dispatch path `api-fetch` uses)
+ * without writing a test. Routing through the shared sequence (not bare
+ * `restGet`/`paginate`) means store secrets and oauth2 tokens resolve
+ * exactly as they will in production.
  *
  * Reads the guide from the REPO's `api-guides/<domain>/guide.md`, resolves
  * the named operation, and runs it against the live endpoint — printing the
@@ -14,7 +18,7 @@
  * Dev tooling, not shipped (api-guides/ is excluded from the npm tarball).
  *
  * Usage:
- *   npx tsx packages/pi-lean-host/api-guides/_shared/probe-op.ts <domain> <operation> \
+ *   npx tsx api-guides/_shared/probe-op.ts <domain> <operation> \
  *     [--params '{"owner":"octocat","per_page":30}'] [--gatherAll]
  *
  * `--gatherAll` walks every page (paginate ops only); default is a single page.
@@ -27,7 +31,7 @@ import {
 	invalidateCache,
 	setUserGuidesDir,
 } from "pi-lean-host/core/guide-store.js";
-import { paginate, restGet } from "pi-lean-host/core/helpers.js";
+import { resolveOpForExecution } from "pi-lean-host/core/resolve-op.js";
 
 const _dirname = dirname(fileURLToPath(import.meta.url));
 // _shared/ lives one level under api-guides/, so the guides root is its parent.
@@ -63,11 +67,12 @@ async function main(): Promise<void> {
 	setUserGuidesDir(REPO_API_GUIDES);
 	invalidateCache();
 
-	const guide = findGuidesByDomain(domain)[0]?.guide;
-	if (!guide) {
+	const hit = findGuidesByDomain(domain)[0];
+	if (!hit) {
 		console.log(`no guide for '${domain}' under ${REPO_API_GUIDES}`);
 		process.exit(1);
 	}
+	const guide = hit.guide;
 	const op = guide.operations.find((o) => o.name === operation);
 	if (!op) {
 		console.log(
@@ -80,10 +85,23 @@ async function main(): Promise<void> {
 
 	console.log(`🔬 ${domain} › ${operation} · ${guide.apiHost}${op.path}`);
 	try {
-		if (op.via === "paginate") {
-			const r = await paginate(guide.apiHost, op, params, guide, {
-				gatherAll,
-			});
+		const outcome = await resolveOpForExecution(guide, op, hit.dirName, {
+			userParams: params,
+			gatherAll,
+		});
+		if (!outcome.ok) {
+			const reason =
+				outcome.reason === "helper_disabled"
+					? `helper disabled: ${outcome.message}`
+					: outcome.reason === "auth_required_not_provisioned"
+						? `missing required secret(s): ${outcome.missing.join(", ")}`
+						: `oauth token missing: ${outcome.message}`;
+			console.log(`probe SKIPPED: ${reason}`);
+			process.exit(1);
+		}
+		if (outcome.authFooter) console.log(`  auth: ${outcome.authFooter}`);
+		if ("urls" in outcome.result) {
+			const r = outcome.result;
 			const lines = [
 				`  via: paginate · ${r.pages} page(s) · ${r.totalFetched} item(s)${r.ceilingHit ? " · CEILING" : ""}${r.serverTotal === undefined ? "" : ` · serverTotal: ${r.serverTotal}`}`,
 			];
@@ -91,9 +109,11 @@ async function main(): Promise<void> {
 			lines.push(`  items: ${trunc(JSON.stringify(r.items), 2000)}`);
 			console.log(lines.join("\n"));
 		} else {
-			const r = await restGet(guide.apiHost, op, params, guide);
-			console.log("  via: restGet");
+			const r = outcome.result;
+			console.log(`  via: ${outcome.via}`);
 			console.log(`  url: ${r.url}`);
+			if (r.transformWarning)
+				console.log(`  ⚠ transform: ${r.transformWarning}`);
 			console.log(`  data: ${trunc(JSON.stringify(r.data, null, 2), 2000)}`);
 		}
 	} catch (err) {

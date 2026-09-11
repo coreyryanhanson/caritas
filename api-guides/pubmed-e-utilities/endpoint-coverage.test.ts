@@ -39,7 +39,7 @@ describe("PubMed E-utilities live integration smoke", () => {
 		"parses and loads the eutils recipe from a temp user dir",
 		withTempDirs("pubmed-e-utilities")(async ({ guidesDir }) => {
 			const { loadApiGuidesFromDir } = await import(
-				"pi-lean-host/core/parse-api-guide.js"
+				"pi-lean-host/core/guide-catalog.js"
 			);
 			const loaded = loadApiGuidesFromDir(guidesDir);
 			expect(Object.keys(loaded.guides)).toContain("pubmed-e-utilities");
@@ -50,8 +50,9 @@ describe("PubMed E-utilities live integration smoke", () => {
 				"https://eutils.ncbi.nlm.nih.gov/entrez/eutils",
 			);
 			expect(guide.auth.kind).toBe("static-key");
-			expect(guide.auth.secretQueryRefs).toEqual({ api_key: "api_key" });
-			expect(guide.auth.optional).toEqual(["api_key"]);
+			expect(guide.auth.secretQueryRefs).toEqual({
+				api_key: { secret: "api_key", optional: true },
+			});
 			expect(guide.operations.length).toBe(8);
 		}),
 	);
@@ -228,5 +229,94 @@ describe("PubMed E-utilities live integration smoke", () => {
 			expect(String(summary.data.eSummaryResult!.DocSum!.Id)).toMatch(/^\d+$/);
 		}),
 		30_000,
+	);
+});
+
+// ═══════════════════════════════════════════════════════════════
+// 200-with-error-envelope (errorPath) — bad-db calls return HTTP 200 with
+// a root <ERROR> element instead of an error status. Live-verified 2026-09-07.
+// ═══════════════════════════════════════════════════════════════
+
+describe("PubMed E-utilities error envelopes (errorPath)", () => {
+	itWhen(
+		"esearch with a bad db throws the 200-envelope error (error page misses itemsPath)",
+		withTempDirs("pubmed-e-utilities")(async ({ guidesDir }) => {
+			// The error body (<eSearchResult><ERROR>…</ERROR>) has no IdList, so
+			// without errorPath the paginated walk would exit silently with
+			// items: [] — the exact silent-success failure errorPath exists to kill.
+			await expect(
+				fetchOp(guidesDir, "esearch", { db: "bogus", term: "test" }),
+			).rejects.toThrow(/Invalid db name specified: bogus/);
+		}),
+		20_000,
+	);
+
+	itWhen(
+		"esearch-raw throws the root <ERROR> text on a bad db",
+		withTempDirs("pubmed-e-utilities")(async ({ guidesDir }) => {
+			await expect(
+				fetchOp(guidesDir, "esearch-raw", { db: "bogus", term: "test" }),
+			).rejects.toThrow(/Invalid db name specified: bogus/);
+		}),
+		20_000,
+	);
+
+	itWhen(
+		"esummary throws the root <ERROR> text on a bad db",
+		withTempDirs("pubmed-e-utilities")(async ({ guidesDir }) => {
+			await expect(
+				fetchOp(guidesDir, "esummary", { db: "bogus", id: PMID }),
+			).rejects.toThrow(/Invalid db name specified: bogus/);
+		}),
+		20_000,
+	);
+
+	itWhen(
+		"efetch throws the root <ERROR> text on a bad db",
+		withTempDirs("pubmed-e-utilities")(async ({ guidesDir }) => {
+			// efetch's success root is PubmedArticleSet (not eFetchResult), so
+			// errorPath eFetchResult.ERROR never collides with a success body.
+			await expect(
+				fetchOp(guidesDir, "efetch", { db: "bogus", id: PMID }),
+			).rejects.toThrow(/is not supported/);
+		}),
+		20_000,
+	);
+
+	itWhen(
+		"elink throws the root <ERROR> text on a bad dbfrom",
+		withTempDirs("pubmed-e-utilities")(async ({ guidesDir }) => {
+			await expect(
+				fetchOp(guidesDir, "elink", { dbfrom: "bogus", id: PMID }),
+			).rejects.toThrow(/Invalid db name specified: bogus/);
+		}),
+		20_000,
+	);
+
+	itWhen(
+		"einfo throws the root <ERROR> text on a bad db",
+		withTempDirs("pubmed-e-utilities")(async ({ guidesDir }) => {
+			await expect(
+				fetchOp(guidesDir, "einfo", { db: "bogus" }),
+			).rejects.toThrow(/Can not retrieve DbInfo/);
+		}),
+		20_000,
+	);
+
+	itWhen(
+		"espell stays success-shaped on a bad db (its <ERROR/> is always present — no errorPath)",
+		withTempDirs("pubmed-e-utilities")(async ({ guidesDir }) => {
+			// espell carries an empty <ERROR/> on every call, success included;
+			// a misspelled db returns a normal body, not an error. The op must
+			// keep succeeding — this pins the deliberate no-errorPath decision.
+			const result = (await fetchOp(guidesDir, "espell", {
+				db: "bogus",
+				term: "test",
+			})) as { data: { eSpellResult?: { Database?: unknown } } };
+			expect(result.data.eSpellResult).toBeTruthy();
+			// Normal body, not an error: the misspelled db is echoed back.
+			expect(result.data.eSpellResult!.Database).toBe("bogus");
+		}),
+		20_000,
 	);
 });

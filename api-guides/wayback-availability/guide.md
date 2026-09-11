@@ -1,6 +1,6 @@
 ---
 kind: api
-schemaVersion: 0
+schemaVersion: 1
 organization: archive.org
 description: Closest archived snapshot for a URL (Wayback Availability JSON API).
 domains:

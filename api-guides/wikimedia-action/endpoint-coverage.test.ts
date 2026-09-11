@@ -68,7 +68,7 @@ describe("Action API baseline", () => {
 			"wikimedia-action",
 		)(async ({ guidesDir }) => {
 			const { loadApiGuidesFromDir } = await import(
-				"pi-lean-host/core/parse-api-guide.js"
+				"pi-lean-host/core/guide-catalog.js"
 			);
 			const loaded = loadApiGuidesFromDir(guidesDir);
 			expect(loaded.malformed).toHaveLength(0);

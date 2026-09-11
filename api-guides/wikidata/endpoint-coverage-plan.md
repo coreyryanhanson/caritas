@@ -287,7 +287,7 @@ already proves the guide parses.
 ## Out of scope / deliberate omissions
 
 - **SPARQL endpoint** — high value but needs `passthrough` flag or a
-  dedicated helper. Deferred to a future sprint.
+  dedicated helper. Deferred.
 - **`wbavailablebadges`** — utility metadata, not research data.
 - **`wbformatvalue` / `wbparsevalue`** — value formatting utilities, not
   data retrieval.

@@ -24,7 +24,7 @@ exists so implementers know what to expect.
 
 ### `datos.gob.es`
 
-- **Observed:** 2026-07-20 during Batch A plan drafting
+- **Observed:** 2026-07-20 during plan drafting
 - **Symptom:** `curl -sI` returns `HTTP/2 503` with response body
   containing Imperva/Incapsula tracking cookies (`visid_incap_*`,
   `nlbi_*`, `incap_ses_*`) and `x-cdn: Imperva` header.
@@ -51,7 +51,7 @@ exists so implementers know what to expect.
 
 ### `www.federalregister.gov`
 
-- **Observed:** 2026-07-21 during Batch B plan drafting
+- **Observed:** 2026-07-21 during plan drafting
 - **Symptom:** `curl` to the docs page (`https://www.federalregister.gov/developers`)
   returns an HTML "Request Access" page with a reCAPTCHA challenge instead of
   the developer documentation. The page states: *"Due to aggressive automated
@@ -84,12 +84,29 @@ exists so implementers know what to expect.
   hitting `/api/v1/*` will pass without special handling. Do NOT point tests
   at the HTML `/developers` page — that will hit the CAPTCHA wall.
 
+### `www.loc.gov`
+
+- **Observed:** 2026-09-07 during docs-link verification
+- **Symptom:** `curl` and `web-fetch` to the docs page
+  (`https://www.loc.gov/apis/json-and-yaml/working-within-limits/`) return
+  `HTTP 403` with a Cloudflare challenge page ("Just a moment...",
+  "Performing security verification").
+- **WAF layer:** Cloudflare bot-detection on the HTML site.
+- **Affected endpoints:** HTML docs pages (including the `docs:` URL in
+  `library-of-congress/guide.md`).
+- **Does NOT affect:** The JSON API endpoints (`https://www.loc.gov/<format>/...`).
+- **Workaround:** The docs link is valid — the 403 is bot-blocking, not a
+  dead URL. Verify in a real browser (`browser-navigate`) and click through
+  the Cloudflare check if needed.
+- **Risk to integration tests:** None for the API; only affects automated
+  fetching of the docs page itself.
+
 ## Template
 
 ```markdown
 ### `domain.tld`
 
-- **Observed:** YYYY-MM-DD during <batch>
+- **Observed:** YYYY-MM-DD during <rollout>
 - **Symptom:** <HTTP status, response body snippet, headers>
 - **WAF layer:** <Cloudflare / Imperva / Akamai / AWS WAF / custom>
 - **Affected endpoints:** <paths or patterns>

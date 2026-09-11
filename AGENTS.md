@@ -84,9 +84,9 @@ __tests__/all-guides-parse.test.ts ← per-PR parse gate over every recipe
 
 `api-guides/_shared/` is **peer test plumbing, not framework code**. Framework
 code never imports it; guides reach it via the relative path
-`../_shared/test-harness.js`. Reuse `withTempDirs`, `createFetchOp`, `itWhen`
-from there. Keep per-file: any `fetchOp` wrapper that adds pacing / 503-retry
-/ auth overlay, and the per-op assertions (these encode domain shape).
+`../_shared/test-harness.js`. Reuse `withTempDirs`, `createFetchOp`, `createResolveOpFn`, `itWhen`
+from there. Keep per-file: any `fetchOp` wrapper that adds pacing / 503-retry,
+and the per-op assertions (these encode domain shape).
 
 ## Authoring a guide (read CONTRIBUTING.md first)
 

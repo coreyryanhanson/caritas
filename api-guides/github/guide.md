@@ -1,6 +1,6 @@
 ---
 kind: api
-schemaVersion: 0
+schemaVersion: 1
 domains:
   - github.com
 shortName: GitHub
@@ -9,11 +9,10 @@ apiHost: https://api.github.com
 auth:
   kind: static-key
   secretRefs:
-    Authorization: api_key
-  headerPrefixes:
-    Authorization: "Bearer "
-  optional:
-    - api_key
+    Authorization:
+      secret: api_key
+      prefix: "Bearer "
+      optional: true
 responseShape:
   format: json
   charset: utf-8
@@ -313,7 +312,8 @@ operations:
       state:
         description: open, closed, or all (default open).
       labels:
-        description: Comma-separated label names to filter by.
+        description: Comma-separated label names to filter by. Accepts a single value or an array (joined with commas) — e.g. `["bug", "help wanted"]`.
+        listStyle: comma
       sort:
         description: created, updated, comments.
       direction:
@@ -903,15 +903,16 @@ ToS permits API access; this recipe reads metadata + CI status only.
 
 ## Auth
 
-`Authorization: Bearer <PAT>` header, **optional** (`auth.optional`):
+`Authorization: Bearer <PAT>` header, **optional** (`secretRefs` entry with
+`optional: true`):
 60 requests/hr unauthenticated → 5000/hr with a PAT. Provision the PAT once:
 
 ```sh
 /api secrets github.com api_key "<raw PAT>"
 ```
 
-The store holds the **raw token**; the guide declares that it is presented as
-`Bearer <token>` (`headerPrefixes`), so a bare token is accepted and a stored
+The store holds the **raw token**; the guide's `secretRefs` entry declares
+`prefix: "Bearer "`, so a bare token is accepted and a stored
 `Bearer` prefix should **not** be added. When absent, calls proceed
 unauthenticated under the 60/hr rate with the
 `auth: ok (optional … not provisioned)` footer; when present, **every op** gets

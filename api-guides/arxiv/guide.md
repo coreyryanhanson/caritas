@@ -1,6 +1,6 @@
 ---
 kind: api
-schemaVersion: 0
+schemaVersion: 1
 domains:
   - arxiv.org
   - export.arxiv.org
@@ -12,7 +12,7 @@ auth:
 responseShape:
   format: xml
   charset: utf-8
-verified: "2026-08-10"
+verified: "2026-09-07"
 docs: https://info.arxiv.org/help/api/user-manual.html
 operations:
   - name: search
@@ -60,7 +60,8 @@ operations:
       totalCountPath: feed.totalResults
     params:
       id_list:
-        description: Comma-delimited arXiv IDs (e.g. `cond-mat/0011267,0710.5765v1`). `vN` selects a specific version.
+        description: Comma-delimited arXiv IDs (e.g. `cond-mat/0011267,0710.5765v1`). `vN` selects a specific version. Accepts a single value or an array (joined with commas).
+        listStyle: comma
         required: true
       max_results:
         description: Results per page.
@@ -129,12 +130,24 @@ boolean `AND` / `OR` / `ANDNOT` and parens; one date-range filter
 advancing `start` up to `serverTotal`** rather than relying on an
 unbounded `gatherAll`. arXiv does **not** return an empty page at the
 sharp end of a result set: a `start` past the last valid index yields an
-error — a single error `<entry>` (`id` = `https://arxiv.org/api/errors`)
-at some offsets, an HTTP 500 at others — never a clean `[]`. A
-`gatherAll` walk past the end therefore doesn't terminate cleanly (it
-collects error sentinels or throws). The op caps `gatherAllMax` at 1000
-to bound such walks, but the agent should prefer explicit `start`-based
-pagination up to `serverTotal`.
+error — a single error `<entry>` (`id` = `https://arxiv.org/api/errors`,
+`title` = `Error`, message in `summary`) at some offsets, an HTTP 500 at
+others — never a clean `[]`.
+
+**Why no `errorPath` here:** the error entry rides the *same* `feed.entry`
+path as valid entries, distinguished only by a field *value* (`id`), which
+`errorPath`'s presence-only semantics cannot express. Declaring one would
+either never fire or fire on every success. A past-end `gatherAll` walk
+therefore still doesn't fail loudly: the error entry is collected as if it
+were a result item (HTTP 500 offsets still throw via the status check).
+The op caps `gatherAllMax` at 1000 to bound such walks, but the agent
+should prefer explicit `start`-based pagination up to `serverTotal` and
+spot-check items for `id` containing `/api/errors` after large walks.
+
+> If a sentinel/value-comparison extension ever lands
+> (`path == sentinel`, e.g. `feed.entry.id != https://arxiv.org/api/errors`),
+> this op is its first consumer — re-verify the past-end shape live before
+> declaring it.
 
 ### `fetchByIds` — Fetch specific papers by arXiv ID
 
