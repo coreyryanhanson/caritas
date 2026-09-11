@@ -20,7 +20,7 @@
  */
 
 import type { ApiGuide, Operation } from "pi-lean-host/core/api-guide-types.js";
-import { loadApiGuidesFromDir } from "pi-lean-host/core/parse-api-guide.js";
+import { loadApiGuidesFromDir } from "pi-lean-host/core/guide-catalog.js";
 import { describe, expect, it } from "vitest";
 import { itWhen, withTempDirs } from "../_shared/test-harness.js";
 

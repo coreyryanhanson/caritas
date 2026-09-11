@@ -60,7 +60,7 @@ describe("CoinGecko live integration (authenticated)", () => {
 		"declares the full set of operations",
 		withTempDirs(DIR)(async ({ guidesDir }) => {
 			const { loadApiGuidesFromDir } = await import(
-				"pi-lean-host/core/parse-api-guide.js"
+				"pi-lean-host/core/guide-catalog.js"
 			);
 			const guide = loadApiGuidesFromDir(guidesDir).guides[DIR]!;
 			const names = guide.operations.map((o) => o.name);
@@ -339,7 +339,7 @@ describe("CoinGecko live integration (authenticated)", () => {
 		"parses and loads the CoinGecko recipe from a temp user dir",
 		withTempDirs(DIR)(async ({ guidesDir }) => {
 			const { loadApiGuidesFromDir } = await import(
-				"pi-lean-host/core/parse-api-guide.js"
+				"pi-lean-host/core/guide-catalog.js"
 			);
 			const loaded = loadApiGuidesFromDir(guidesDir);
 			expect(Object.keys(loaded.guides)).toContain(DIR);

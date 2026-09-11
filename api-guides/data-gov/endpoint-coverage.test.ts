@@ -43,7 +43,7 @@ async function fetchOp(
 	params: Record<string, unknown> = {},
 ) {
 	const { loadApiGuidesFromDir } = await import(
-		"pi-lean-host/core/parse-api-guide.js"
+		"pi-lean-host/core/guide-catalog.js"
 	);
 	const { restGet, paginate } = await import("pi-lean-host/core/helpers.js");
 	const { setUserGuidesDir } = await import("pi-lean-host/core/guide-store.js");
@@ -77,7 +77,7 @@ describe("resources.data.gov live integration smoke", () => {
 		"parses and loads the Data.gov recipe from a temp user dir",
 		withTempDirs(DIR)(async ({ guidesDir }) => {
 			const { loadApiGuidesFromDir } = await import(
-				"pi-lean-host/core/parse-api-guide.js"
+				"pi-lean-host/core/guide-catalog.js"
 			);
 			const loaded = loadApiGuidesFromDir(guidesDir);
 			expect(Object.keys(loaded.guides)).toContain(DIR);

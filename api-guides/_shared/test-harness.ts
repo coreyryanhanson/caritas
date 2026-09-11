@@ -241,7 +241,7 @@ export function setupMockedRecipe(domain: string): {
 				"pi-lean-host/core/guide-store.js"
 			);
 			const { loadApiGuidesFromDir } = await import(
-				"pi-lean-host/core/parse-api-guide.js"
+				"pi-lean-host/core/guide-catalog.js"
 			);
 			setUserGuidesDir(guidesDir);
 			invalidateCache();

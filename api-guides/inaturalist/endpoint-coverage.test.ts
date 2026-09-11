@@ -96,7 +96,7 @@ describe("iNaturalist recipe parses", () => {
 		"parses cleanly with guide-level page pagination + the derived-id cursor override",
 		withTempDirs(DIR)(async ({ guidesDir }) => {
 			const { loadApiGuidesFromDir } = await import(
-				"pi-lean-host/core/parse-api-guide.js"
+				"pi-lean-host/core/guide-catalog.js"
 			);
 			const loaded = loadApiGuidesFromDir(guidesDir);
 			expect(Object.keys(loaded.guides)).toContain(DIR);

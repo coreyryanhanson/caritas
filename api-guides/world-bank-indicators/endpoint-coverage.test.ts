@@ -33,7 +33,7 @@ describe("World Bank Indicators live integration", () => {
 		"parses and loads the World Bank Indicators recipe from a temp user dir",
 		withTempDirs(DIR)(async ({ guidesDir }) => {
 			const { loadApiGuidesFromDir } = await import(
-				"pi-lean-host/core/parse-api-guide.js"
+				"pi-lean-host/core/guide-catalog.js"
 			);
 			const loaded = loadApiGuidesFromDir(guidesDir);
 			expect(Object.keys(loaded.guides)).toContain(DIR);

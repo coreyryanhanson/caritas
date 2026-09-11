@@ -105,7 +105,7 @@ describe("Open Food Facts recipe parses", () => {
 		"parses cleanly with the page-style pagination block and all 9 ops",
 		withTempDirs(DIR)(async ({ guidesDir }) => {
 			const { loadApiGuidesFromDir } = await import(
-				"pi-lean-host/core/parse-api-guide.js"
+				"pi-lean-host/core/guide-catalog.js"
 			);
 			const loaded = loadApiGuidesFromDir(guidesDir);
 			expect(Object.keys(loaded.guides)).toContain(DIR);

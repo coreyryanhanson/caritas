@@ -174,7 +174,7 @@ describe("BOE helper — live endpoint compose", () => {
 		"listConsolidada with a plain query term returns matches (helper DSL wrap)",
 		withTempDirs("boletin-oficial-del-estado")(async ({ guidesDir }) => {
 			const { loadApiGuidesFromDir } = await import(
-				"pi-lean-host/core/parse-api-guide.js"
+				"pi-lean-host/core/guide-catalog.js"
 			);
 			const { callHelper } = await import("pi-lean-host/core/local-helpers.js");
 			const { restGet } = await import("pi-lean-host/core/helpers.js");

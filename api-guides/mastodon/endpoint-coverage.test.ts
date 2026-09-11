@@ -172,7 +172,7 @@ describe("Mastodon recipe structure (always-on)", () => {
 		"declares the oauth2 authorization_code + PKCE shape",
 		withTempDirs(DIR)(async ({ guidesDir }) => {
 			const { loadApiGuidesFromDir } = await import(
-				"pi-lean-host/core/parse-api-guide.js"
+				"pi-lean-host/core/guide-catalog.js"
 			);
 			const loaded = loadApiGuidesFromDir(guidesDir);
 			expect(Object.keys(loaded.guides)).toContain(DIR);
@@ -200,7 +200,7 @@ describe("Mastodon recipe structure (always-on)", () => {
 		"declares the full read-only op surface, all GET via restGet",
 		withTempDirs(DIR)(async ({ guidesDir }) => {
 			const { loadApiGuidesFromDir } = await import(
-				"pi-lean-host/core/parse-api-guide.js"
+				"pi-lean-host/core/guide-catalog.js"
 			);
 			const guide = loadApiGuidesFromDir(guidesDir).guides[DIR]!;
 			const byName = new Map(guide.operations.map((o) => [o.name, o]));

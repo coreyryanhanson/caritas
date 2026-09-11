@@ -11,7 +11,7 @@
 
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadApiGuidesFromDir } from "pi-lean-host/core/parse-api-guide.js";
+import { loadApiGuidesFromDir } from "pi-lean-host/core/guide-catalog.js";
 import { expect, it } from "vitest";
 
 // This file lives in api-guides/, which is the guides root.

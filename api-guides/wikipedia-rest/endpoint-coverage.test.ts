@@ -18,7 +18,7 @@ async function fetchOp(
 	params: Record<string, unknown> = {},
 ) {
 	const { loadApiGuidesFromDir } = await import(
-		"pi-lean-host/core/parse-api-guide.js"
+		"pi-lean-host/core/guide-catalog.js"
 	);
 	const { restGet } = await import("pi-lean-host/core/helpers.js");
 	const { setUserGuidesDir } = await import("pi-lean-host/core/guide-store.js");
@@ -42,7 +42,7 @@ describe("Wikipedia REST live integration smoke", () => {
 		"parses and loads the recipe; broken getFeaturedFeed is removed",
 		withTempDirs("wikipedia-rest")(async ({ guidesDir }) => {
 			const { loadApiGuidesFromDir } = await import(
-				"pi-lean-host/core/parse-api-guide.js"
+				"pi-lean-host/core/guide-catalog.js"
 			);
 			const loaded = loadApiGuidesFromDir(guidesDir);
 			expect(Object.keys(loaded.guides)).toContain("wikipedia-rest");
