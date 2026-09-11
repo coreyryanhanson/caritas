@@ -467,7 +467,9 @@ describe("Mastodon live integration (oauth2 authorization_code)", () => {
 			expectNoTokenOnUrls(one);
 
 			const multi = (await runOp(guidesDir, "accounts", {
-				id: MASTODON_ID,
+				// `accounts` is a listStyle:bracket param — Mastodon only answers
+				// the array wire form (`id[]=13179`); a scalar `id=` yields [].
+				id: [MASTODON_ID],
 			}))!;
 			const fetched = (multi.result as RestGetResult).data as Array<{
 				id: string;
