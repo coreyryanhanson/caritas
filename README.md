@@ -65,12 +65,14 @@ your own pi-lean-host guides directory. Nothing in this repo auto-executes.
 ### Domains covered
 
 ```text
-arxiv                         ecb-data-portal               internet-archive              wayback-availability
-boletin-oficial-del-estado    etherscan                     library-of-congress           wayback-cdx-server
-coingecko                     federal-register              musicbrainz                   wikidata
-data-gov                      gbif                          open-library                  wikimedia-action
-datos-gob-es                  github                        pubmed-e-utilities            wikipedia-rest
-deutsche-nationalbibliothek   gitlab                        usgs-earthquake
+arxiv                         federal-register              mastodon                      twitch-user
+boletin-oficial-del-estado    frost-server-sensorthings     musicbrainz                   usgs-earthquake
+coingecko                     gbif                          open-food-facts               wayback-availability
+data-gov                      github                        open-library                  wayback-cdx-server
+datos-gob-es                  gitlab                        pubmed-e-utilities            wikidata
+deutsche-nationalbibliothek   inaturalist                   stripe                        wikimedia-action
+ecb-data-portal               internet-archive              telegram-bot-api              wikipedia-rest
+etherscan                     library-of-congress           twitch                        world-bank-indicators
 ```
 
 Each folder is named `slug(shortName)` — the guide's `shortName` lowercased
